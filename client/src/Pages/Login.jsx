@@ -1,20 +1,30 @@
 import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
-import { useLoginMutation } from "../Redux/Service/Service";
+import { Link, useNavigate } from "react-router-dom";
+import { useLoginMutation } from "../Redux/Service";
 import toast from "react-hot-toast";
-import Cookies from "js-cookie"
-
+import { addMyInfo, toggleLoginStatus } from "../Redux/slice";
+import { useSelector, useDispatch } from "react-redux";
 const Login = () => {
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
     const [login, loginData] = useLoginMutation()
+    const { loggedInStatus } = useSelector(state => state.service)
+    if (loggedInStatus) {
+        navigate("/profile")
+    }
+    
     const handleSubmit = async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
         const obj = Object.fromEntries(formData.entries());
         const data = await login(obj)
+        console.log(obj);
         if (data.error) {
             toast.error(data.error.data.message)
         } else if (data.data.message) {
             toast.success(data.data.message)
+            dispatch(addMyInfo(data.data.user))
+            dispatch(toggleLoginStatus(true))
         }
     };
 
@@ -79,6 +89,7 @@ const Login = () => {
                         <div className="px-4">
                             <label className="flex items-center gap-3 py-3">
                                 <input
+                                onClick={(e)=>toggleRememberMe()}
                                     type="checkbox"
                                     name="rememberMe"
                                     className="h-5 w-5 rounded border-2 border-[#d0dbe7] bg-transparent checked:bg-[#1980e6] focus:ring-0"

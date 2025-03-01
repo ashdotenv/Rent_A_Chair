@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { BACKEND_URL } from "../../config";
+import { BACKEND_URL } from "../config";
 export const serviceApi = createApi({
   reducerPath: "serviceApi",
   baseQuery: fetchBaseQuery({
@@ -9,14 +9,6 @@ export const serviceApi = createApi({
   keepUnusedDataFor: 60 * 60 * 24 * 7,
   tagTypes: ["Products", "Me"],
   endpoints: (builder) => ({
-    register: builder.mutation({
-      query: (data) => ({
-        url: "register",
-        method: "POST",
-        body: data,
-      }),
-      invalidatesTags: ["Me"],
-    }),
     login: builder.mutation({
       query: (data) => ({
         url: "login",
@@ -25,6 +17,22 @@ export const serviceApi = createApi({
       }),
       invalidatesTags: ["Me"],
     }),
+
+    getAllProducts: builder.query({
+      query: () => ({
+        url: "getAllProducts",
+        method: "GET",
+      }),
+    }),
+    getProductById: builder.query({
+      query: (id) => ({
+        url: `getProductById/${id}`,
+      }),
+    }),
   }),
 });
-export const { useLoginMutation, useRegisterMutation } = serviceApi;
+export const {
+  useLazyGetProductByIdQuery,
+  useLoginMutation,
+  useGetAllProductsQuery,
+} = serviceApi;

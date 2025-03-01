@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { useRegisterMutation } from "../Redux/Service/Service";
+import { Link, useNavigate } from "react-router-dom";
+import { useRegisterMutation } from "../Redux/Service";
 import toast from "react-hot-toast";
 const Register = () => {
     const [register, { isError, isLoading }] = useRegisterMutation()
+    const navigate = useNavigate()
     const handleSubmit = async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
@@ -13,6 +14,7 @@ const Register = () => {
         if (data.error) {
             toast.error(data.error.data.message)
         } else if (data.data.message) {
+            navigate("/login")
             toast.success(data.data.message)
         }
     };
@@ -21,7 +23,10 @@ const Register = () => {
             toast.error("Something Went Wrong")
         }
     }, [register])
-
+    const { loginStatus } = useSelector(state => state.service)
+    if (loginStatus) {
+        navigate("/profile")
+    }
     const [agreeToTermsAndCondition, setAgreeToTermsAndCondition] = useState(false);
 
     return (

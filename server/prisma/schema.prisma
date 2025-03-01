@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,20 +11,133 @@ datasource db {
 }
 
 model User {
-  id         Int       @id @default(autoincrement())
-  fullName   String
-  username   String    
-  password   String
-  email      String    
-  phone      String?
-  address    String?
-  profilePic String?
-  role       Role?     @default(User)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime? @updatedAt
+  userId               Int        @id @default(autoincrement())
+  fullName             String
+  username             String     @unique
+  password             String
+  email                String     @unique
+  phone                String?
+  address              String?
+  profilePic           String?
+  role                 Role       @default(User)
+  passwordResetToken   String?
+  passwordTokenExpires DateTime?
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime?  @updatedAt
+  orders               Order[]
+  referralsGiven       Referral[] @relation("ReferralReferrer") // Referrals made by the user
+  referralsReceived    Referral[] @relation("ReferralReferee") // Referrals received by the user
 }
 
 enum Role {
   User
   Admin
+}
+
+model Furniture {
+  FurnitureId Int         @id @default(autoincrement())
+  name        String
+  categoryId  Int
+  category    Category    @relation("FurnitureCategory", fields: [categoryId], references: [CategoryId])
+  condition   Condition
+  pricePerDay Float
+  description String
+  isAvailable Boolean     @default(true)
+  dimensions  String?
+  material    String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime?   @updatedAt
+  images      Image[]
+  orderItems  OrderItem[]
+  Coupon      Coupon[]
+}
+
+model Image {
+  ImageId     Int       @id @default(autoincrement())
+  imageUrl    String
+  furniture   Furniture @relation(fields: [furnitureId], references: [FurnitureId])
+  furnitureId Int
+}
+
+enum Condition {
+  New
+  Good
+  Fair
+  Poor
+}
+
+model Category {
+  CategoryId  Int         @id @default(autoincrement())
+  name        String
+  description String?
+  furniture   Furniture[] @relation("FurnitureCategory")
+}
+
+enum PaymentStatus {
+  Pending
+  Completed
+  Failed
+  Refunded
+}
+
+model Order {
+  orderId       Int           @id @default(autoincrement())
+  userId        Int
+  user          User          @relation(fields: [userId], references: [userId])
+  totalPrice    Float
+  status        OrderStatus   @default(Pending)
+  paymentStatus PaymentStatus @default(Pending)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime?     @updatedAt
+  orderItems    OrderItem[]
+}
+
+enum OrderStatus {
+  Pending
+  Confirmed
+  Shipped
+  Delivered
+  Canceled
+}
+
+model OrderItem {
+  orderItemId Int       @id @default(autoincrement())
+  orderId     Int
+  order       Order     @relation(fields: [orderId], references: [orderId])
+  furnitureId Int
+  furniture   Furniture @relation(fields: [furnitureId], references: [FurnitureId])
+  quantity    Int       @default(1)
+  subTotal    Float
+}
+
+model Coupon {
+  CouponId     Int        @id @default(autoincrement())
+  code         String     @unique
+  discount     Float
+  isPercentage Boolean
+  furnitureId  Int?
+  furniture    Furniture? @relation(fields: [furnitureId], references: [FurnitureId])
+  expiryDate   DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime?  @updatedAt
+  isActive     Boolean    @default(true)
+}
+
+model Referral {
+  referralId         Int            @id @default(autoincrement())
+  referrerId         Int // User who is referring
+  refereeId          Int // User who is being referred
+  referralCode       String         @unique // Unique referral code for tracking
+  discountPercentage Float // Discount percentage earned by referrer
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime?      @updatedAt
+  referrer           User           @relation("ReferralReferrer", fields: [referrerId], references: [userId])
+  referee            User           @relation("ReferralReferee", fields: [refereeId], references: [userId])
+  status             ReferralStatus @default(PENDING)
+}
+
+enum ReferralStatus {
+  PENDING
+  REWARDED
+  EXPIRED
 }

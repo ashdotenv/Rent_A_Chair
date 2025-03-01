@@ -4,6 +4,7 @@ import { prisma } from "../utils/prismaClient.js";
 import { generateToken } from "../utils/generateToken.js";
 import { catchAsyncError } from "../middlewares/error.js";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 export const Register = catchAsyncError(async function (
   req: Request,
   res: Response,
@@ -35,7 +36,10 @@ export const Register = catchAsyncError(async function (
       partitioned: true,
       expires: new Date(Date.now() + 24 * 60 * 60 * 15),
     })
-    .json({ message: "User Created Successfully", newUser });
+    .json({
+      message: "User Created Successfully",
+      newUser: { ...newUser, password: "" },
+    });
 });
 export const Login = catchAsyncError(async function (
   req: Request,
@@ -43,15 +47,15 @@ export const Login = catchAsyncError(async function (
   next: NextFunction
 ) {
   const { email, password } = req.body;
-  const chechUser = await prisma.user.findFirst({
+  const checkUser = await prisma.user.findFirst({
     where: {
       email: email,
     },
   });
-  if (!chechUser) {
+  if (!checkUser) {
     return next(new ErrorHandler(400, "User With the Email not Found"));
   }
-  const checkPassword = await bcrypt.compare(password, chechUser.password);
+  const checkPassword = await bcrypt.compare(password, checkUser.password);
   if (!checkPassword) {
     return next(new ErrorHandler(400, "Password Didn't Matched"));
   }
@@ -66,5 +70,5 @@ export const Login = catchAsyncError(async function (
       maxAge: 100 * 24 * 60 * 60 * 1000,
       expires: new Date(Date.now() + 24 * 60 * 60 * 15),
     })
-    .json({ message: "Logged In Successfully" });
+    .json({ message: "Logged In Successfully", user: checkUser });
 });

@@ -28,19 +28,22 @@ export const Register = catchAsyncError(async function (req, res, next) {
         partitioned: true,
         expires: new Date(Date.now() + 24 * 60 * 60 * 15),
     })
-        .json({ message: "User Created Successfully", newUser });
+        .json({
+        message: "User Created Successfully",
+        newUser: { ...newUser, password: "" },
+    });
 });
 export const Login = catchAsyncError(async function (req, res, next) {
     const { email, password } = req.body;
-    const chechUser = await prisma.user.findFirst({
+    const checkUser = await prisma.user.findFirst({
         where: {
             email: email,
         },
     });
-    if (!chechUser) {
+    if (!checkUser) {
         return next(new ErrorHandler(400, "User With the Email not Found"));
     }
-    const checkPassword = await bcrypt.compare(password, chechUser.password);
+    const checkPassword = await bcrypt.compare(password, checkUser.password);
     if (!checkPassword) {
         return next(new ErrorHandler(400, "Password Didn't Matched"));
     }
@@ -55,5 +58,5 @@ export const Login = catchAsyncError(async function (req, res, next) {
         maxAge: 100 * 24 * 60 * 60 * 1000,
         expires: new Date(Date.now() + 24 * 60 * 60 * 15),
     })
-        .json({ message: "Logged In Successfully" });
+        .json({ message: "Logged In Successfully", user: checkUser });
 });
