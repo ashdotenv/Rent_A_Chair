@@ -72,3 +72,49 @@ export const Login = catchAsyncError(async function (
     })
     .json({ message: "Logged In Successfully", user: checkUser });
 });
+export const logout = catchAsyncError(async function (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  res
+    .status(200)
+    .clearCookie("token", {
+      secure: true,
+      httpOnly: true,
+      sameSite: "none",
+      partitioned: true,
+    })
+    .json({ message: "Logged Out Successfully" });
+});
+export const adminLogin = catchAsyncError(async function (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { email, password } = req.body;
+  const checkAdmin = await prisma.user.findFirst({
+    where: {
+      email: email,
+    },
+  });
+  if (checkAdmin?.role !== "Admin") {
+    return next(new ErrorHandler(400, "Opps Looks Like your are not an Admin"));
+  }
+  const checkPassword = await bcrypt.compare(password, checkAdmin.password);
+  if (!checkPassword) {
+    return next(new ErrorHandler(401, "Password Didnot Matched"));
+  }
+  const token = generateToken(checkAdmin.email);
+  res
+    .status(200)
+    .cookie("token", token, {
+      secure: true,
+      httpOnly: true,
+      sameSite: "none",
+      partitioned: true,
+      maxAge: 100 * 24 * 60 * 60 * 1000,
+      expires: new Date(Date.now() + 24 * 60 * 60 * 15),
+    })
+    .json({ message: "Admin Login Successful", token });
+});

@@ -3,11 +3,14 @@ import toast from "react-hot-toast";
 
 const cartProducts = JSON.parse(localStorage.getItem("cart")) || [];
 const favoriteItems = JSON.parse(localStorage.getItem("favorites")) || [];
-const orderSummaryItems = JSON.parse(localStorage.getItem("order_summary")) || [];
+const orderSummaryItems =
+  JSON.parse(localStorage.getItem("order_summary")) || [];
+const getLoggedInStatus = JSON.parse(localStorage.getItem("loggedIn")) || false;
+
 export const serviceSlice = createSlice({
   initialState: {
     myInfo: null,
-    loggedInStatus: false,
+    loggedInStatus: getLoggedInStatus, // Correctly parsing the boolean from localStorage
     userId: null,
     searchedProducts: null,
     filteredProducts: null,
@@ -19,12 +22,14 @@ export const serviceSlice = createSlice({
   name: "service",
   reducers: {
     addMyInfo: (state, action) => {
-      console.log(action.payload);
       state.myInfo = action.payload;
       state.userId = action.payload.userId;
     },
     toggleLoginStatus: (state, action) => {
+      // Toggle loggedInStatus correctly and persist in localStorage
+      console.log(action.payload);
       state.loggedInStatus = action.payload;
+      localStorage.setItem("loggedIn", JSON.stringify(action.payload)); // Save the login status to localStorage
     },
     addToCart: (state, action) => {
       const product = action.payload;
@@ -44,7 +49,7 @@ export const serviceSlice = createSlice({
 
       // Store the updated cart in localStorage
       localStorage.setItem("cart", JSON.stringify(state.cartItems));
-      toast.success(`Added To Cart `);
+      toast.success(`Added To Cart`);
     },
     removeFromCart: (state, action) => {
       const furnitureId = action.payload.FurnitureId;

@@ -1,9 +1,11 @@
+import bcrypt from "bcrypt";
 import { NextFunction, Request, Response } from "express";
 import { catchAsyncError } from "../middlewares/error.js";
 import { prisma } from "../utils/prismaClient.js";
 import ErrorHandler from "../utils/errorHandler.js";
 import cloudinary from "cloudinary";
 import { Condition } from "@prisma/client";
+import { generateToken } from "../utils/generateToken.js";
 
 export const addProduct = catchAsyncError(async function (
   req: Request,
@@ -89,8 +91,7 @@ export const updateProduct = catchAsyncError(async function (
     isAvailable,
     dimensions,
     material,
-    condition
-    
+    condition,
   } = req.body;
 
   // Validate ID
@@ -165,7 +166,7 @@ export const updateProduct = catchAsyncError(async function (
           : product.isAvailable,
       dimensions: dimensions || product.dimensions,
       material: material || product.material,
-      condition:condition||product.condition
+      condition: condition || product.condition,
     },
     include: { images: true },
   });
@@ -191,31 +192,60 @@ export const deleteProduct = catchAsyncError(async function (
   // Check if the product exists
   const product = await prisma.furniture.findUnique({
     where: { FurnitureId: parseInt(id) },
-    include: { images: true }, // Include related images
+    include: { images: true, orderItems: true, Coupon: true }, // Include related entities
   });
 
   if (!product) {
     return next(new ErrorHandler(404, "Product not found."));
   }
 
-  // Delete associated images from Cloudinary
-  await Promise.all(
-    product.images.map(async (image) => {
-      const publicId = image.imageUrl.split("/").pop().split(".")[0]; // Extract Cloudinary publicId
-      await cloudinary.v2.uploader.destroy(`furniture_products/${publicId}`);
-    })
-  );
+  // Check if the product is associated with any order items or coupons
+  if (product.orderItems.length > 0) {
+    return next(
+      new ErrorHandler(
+        400,
+        "Cannot delete product as it is part of existing orders."
+      )
+    );
+  }
 
-  // Delete the product and its images from the database
-  await prisma.furniture.delete({
-    where: { FurnitureId: parseInt(id) },
-  });
+  if (product.Coupon.length > 0) {
+    return next(
+      new ErrorHandler(
+        400,
+        "Cannot delete product as it is associated with active coupons."
+      )
+    );
+  }
 
-  res.status(200).json({
-    success: true,
-    message: "Product deleted successfully.",
-  });
+  // Remove related images from Cloudinary
+  if (product.images) {
+    await Promise.all(
+      product.images.map(async (image) => {
+        const publicId = image.imageUrl.split("/").pop().split(".")[0]; // Extract Cloudinary publicId
+        await cloudinary.v2.uploader.destroy(`furniture_products/${publicId}`);
+      })
+    );
+  }
+
+  // Delete the product from the database
+  try {
+    const deletedProduct = await prisma.furniture.delete({
+      where: { FurnitureId: parseInt(id) },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Product deleted successfully.",
+    });
+  } catch (error) {
+    console.log(error);
+    return next(
+      new ErrorHandler(500, "An error occurred while deleting the product.")
+    );
+  }
 });
+
 export const generateCoupon = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     const { code, discount, isPercentage, furnitureId, expiryDate } = req.body;
@@ -250,4 +280,25 @@ export const getAllCategories = catchAsyncError(async function (
 ) {
   const categories = await prisma.category.findMany();
   res.status(200).json(categories);
+});
+export const adminLogin = catchAsyncError(async function (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { email, password } = req.body;
+  const checkAdmin = await prisma.user.findFirst({
+    where: {
+      email: email,
+    },
+  });
+  if (checkAdmin?.role !== "Admin") {
+    return next(new ErrorHandler(400, "Opps Looks Like your are not an Admin"));
+  }
+  const checkPassword = await bcrypt.compare(password, checkAdmin.password);
+  if (!checkPassword) {
+    return next(new ErrorHandler(401, "Password Didnot Matched"));
+  }
+  const token = generateToken(checkAdmin.email);
+  res.status(200).json({ message: "Admin Login Successful", token });
 });

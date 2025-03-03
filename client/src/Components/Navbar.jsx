@@ -1,13 +1,20 @@
 import { useState } from 'react';
 import { FiHome, FiHeart, FiShoppingCart, FiUser, FiSearch, FiMenu, FiX, FiLogIn } from 'react-icons/fi';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
+import { toggleLoginStatus } from '../Redux/slice';
+import toast from 'react-hot-toast';
+import { useLogoutMutation } from '../Redux/Service'; // Make sure to use a mutation if you need to perform a logout action
 
 const Navbar = () => {
-    const { myInfo } = useSelector(state => state.service);
+    const { loggedInStatus } = useSelector(state => state.service);
+    const dispatch = useDispatch();
     const [menuOpen, setMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState(''); // state to capture the search query
     const navigate = useNavigate(); // useNavigate hook for programmatic navigation
+    const { cartItems } = useSelector(state => state.service)
+    // Using useLogoutMutation hook here
+    const [logout, { isLoading, error }] = useLogoutMutation(); // Use mutation hook for logout
 
     const handleSearchKeyDown = (e) => {
         if (e.key === 'Enter') {
@@ -15,6 +22,27 @@ const Navbar = () => {
         }
     };
 
+    const handleLogout = async () => {
+        if (isLoading) return; // Prevent duplicate logout requests while loading
+
+        try {
+            // Call the logout mutation
+            const { data } = await logout(); // This triggers the logout API request
+
+            dispatch(toggleLoginStatus(false)); // Update the login state in Redux
+            console.log(data);
+
+            // Clear localStorage
+            localStorage.clear("loggedIn");
+
+            // Show success toast
+            toast.success("Logged Out Successfully");
+        } catch (error) {
+            console.error(error);
+            // Handle any errors that occur during logout
+            toast.error("Logout failed");
+        }
+    };
 
     return (
         <nav className='bg-white text-gray-900 shadow-md'>
@@ -41,14 +69,25 @@ const Navbar = () => {
                 <div className='hidden md:flex items-center gap-6'>
                     <Link to='/' className='hover:text-[#1980E5]'><FiHome size={24} /></Link>
                     <Link to='/favorites' className='hover:text-[#1980E5]'><FiHeart size={24} /></Link>
-                    <Link to='/cart' className='hover:text-[#1980E5]'><FiShoppingCart size={24} /></Link>
+                    <div className='flex'>
+                        <Link to='/cart' className='hover:text-[#1980E5]'><FiShoppingCart size={24} />  </Link>
+                        <sup className='text-[15px] text-[#1980E5] font-bold' >{cartItems.length}</sup>
+                    </div>
 
                     {/* Conditional Auth Buttons */}
-                    {myInfo ? (
-                        <Link to='/profile' className='flex items-center gap-2 hover:text-[#1980E5]'>
-                            <FiUser size={24} />
-                            <span>{myInfo.name}</span>
-                        </Link>
+                    {loggedInStatus ? (
+                        <>
+                            <Link to='/profile' className='flex items-center gap-2 hover:text-[#1980E5]'>
+                                <FiUser size={24} />
+                                <span>{loggedInStatus.name}</span>
+                            </Link>
+
+                            <button
+                                onClick={handleLogout}
+                                className='flex items-center gap-2 hover:text-[#1980E5] border-2 p-2 rounded-xl bg-blue-300'>
+                                Logout
+                            </button>
+                        </>
                     ) : (
                         <Link to='/login' className='flex items-center gap-2 bg-[#1980E5] text-white px-4 py-2 rounded-lg hover:bg-blue-600'>
                             <FiLogIn size={20} /> Login/Register
@@ -71,7 +110,7 @@ const Navbar = () => {
                     <Link to='/' className='hover:text-[#1980E5]'><FiHome size={24} /> Home</Link>
                     <Link to='/favorites' className='hover:text-[#1980E5]'><FiHeart size={24} /> Favorites</Link>
                     <Link to='/cart' className='hover:text-[#1980E5]'><FiShoppingCart size={24} /> Cart</Link>
-                    {myInfo ? (
+                    {loggedInStatus ? (
                         <Link to='/profile' className='hover:text-[#1980E5]'><FiUser size={24} /> Profile</Link>
                     ) : (
                         <Link to='/login' className='bg-[#1980E5] text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center gap-2'>

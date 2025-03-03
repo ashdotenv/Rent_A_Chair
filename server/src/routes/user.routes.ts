@@ -9,5 +9,5 @@ const router = express.Router();
 router.patch("/update-profile/:id", updateProfile);
 router.get("/getmydetails", getMyDetails);
 router.get("/myOrders", getMyOrders);
-router.post("/resetPassword", resetPassword);
+router.get("/resetPassword", resetPassword);
 export default router;

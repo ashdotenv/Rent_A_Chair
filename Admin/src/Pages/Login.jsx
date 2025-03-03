@@ -1,15 +1,11 @@
-import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useLoginMutation } from "../Redux/Service";
 import toast from "react-hot-toast";
-import { addMyInfo, toggleLoginStatus } from "../Redux/slice";
 import { useDispatch } from "react-redux";
+import { useAdminloginMutation } from "../Redux/Service";
 const Login = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
-    const [login, loginData] = useLoginMutation()
-
-
+    const [login, loginData] = useAdminloginMutation()
     const handleSubmit = async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
@@ -19,10 +15,8 @@ const Login = () => {
             toast.error(data.error.data.message)
         } else if (data.data.message) {
             localStorage.setItem("loggedIn", true)
+            navigate("/products")
             toast.success(data.data.message)
-            navigate("/profile/settings")
-            dispatch(addMyInfo(data.data.user))
-            dispatch(toggleLoginStatus(true))
         }
     };
 
@@ -111,13 +105,6 @@ const Login = () => {
                             </button>
                         </div>
 
-                        {/* Register Redirect */}
-                        <div className="mt-2 text-center">
-                            Don't have an account yet?{' '}
-                            <Link to="/register" className="text-blue-500">
-                                Register
-                            </Link>
-                        </div>
                     </form>
                 </div>
             </div>

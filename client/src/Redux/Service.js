@@ -50,6 +50,18 @@ export const serviceApi = createApi({
         url: `getProductById/${id}`,
       }),
     }),
+    resetPassword: builder.query({
+      query: () => ({
+        url: "/user/resetPassword",
+        method: "GET",
+      }),
+    }),
+    logout: builder.mutation({
+      query: () => ({
+        url: "logout",
+        method: "GET",
+      }),
+    }),
   }),
 });
 export const {
@@ -59,4 +71,6 @@ export const {
   useUpdateInfoMutation,
   useRegisterMutation,
   useGetAllProductsQuery,
+  useResetPasswordQuery,
+  useLogoutMutation,
 } = serviceApi;

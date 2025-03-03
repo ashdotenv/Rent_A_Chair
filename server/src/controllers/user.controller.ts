@@ -13,7 +13,9 @@ export const updateProfile = catchAsyncError(async function (
   res: Response,
   next: NextFunction
 ) {
+  console.log(req.files);
   const { body } = req;
+  console.log(body);
   const { id: idParam } = req.params;
   const id = parseInt(idParam, 10);
   console.log(req.user.email);
@@ -135,13 +137,12 @@ export const resetPassword = catchAsyncError(async function (
   next: NextFunction
 ) {
   const { email } = req.user;
-
   if (!email) {
     return next(new ErrorHandler(400, "Email is required"));
   }
 
   const user = await prisma.user.findUnique({ where: { email } });
-
+  console.log(user);
   if (!user) {
     return next(new ErrorHandler(404, "User not found"));
   }
@@ -157,10 +158,10 @@ export const resetPassword = catchAsyncError(async function (
     },
   });
 
-  const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+  const resetLink = `${process.env.FRONTEND_URL}resetPassword?token=${resetToken}`;
   const message = `Click <a href="${resetLink}">here</a> to reset your password. This link will expire in 15 minutes.`;
 
-  sendMail(user.email, "Password Reset Request", message);
+  await sendMail(user.email, "Password Reset Request", message);
 
   res.status(200).json({
     success: true,

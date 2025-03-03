@@ -17,7 +17,7 @@ const ProfileSidebar = () => {
                         <FiSettings /> Settings
                     </Link>
                     <Link
-                        to="/profile/my-orders"
+                        to="/profile/myorders"
                         className="flex items-center gap-2 px-4 py-2 bg-gray-200 rounded-lg hover:bg-[#1980E5] hover:text-white transition"
                     >
                         <BsBoxSeam /> My Orders

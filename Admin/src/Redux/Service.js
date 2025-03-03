@@ -9,15 +9,41 @@ export const serviceApi = createApi({
   keepUnusedDataFor: 60 * 60 * 24 * 7,
   tagTypes: ["Products", "Me"],
   endpoints: (builder) => ({
-    login: builder.mutation({
+    adminlogin: builder.mutation({
       query: (data) => ({
-        url: "login",
+        url: "adminlogin",
         method: "POST",
         body: data,
       }),
       invalidatesTags: ["Me"],
     }),
 
+    updateProduct: builder.mutation({
+      query: ({ productId, data }) => ({
+        url: `/admin/update-product/${productId}`,
+        body: data,
+        method: "PATCH",
+      }),
+    }),
+    addProduct: builder.mutation({
+      query: (body) => ({
+        url: "/admin/add-product",
+        body: body,
+        method: "POST",
+      }),
+    }),
+    getAllCategories: builder.query({
+      query: () => ({
+        url: "/admin/getAllCategories",
+        method: "GET",
+      }),
+    }),
+    deleteProduct: builder.mutation({
+      query: (productId) => ({
+        url: `/admin/delete-product/${productId}`,
+        method: "DELETE",
+      }),
+    }),
     getAllProducts: builder.query({
       query: () => ({
         url: "getAllProducts",
@@ -33,6 +59,10 @@ export const serviceApi = createApi({
 });
 export const {
   useLazyGetProductByIdQuery,
-  useLoginMutation,
+  useAdminloginMutation,
   useGetAllProductsQuery,
+  useUpdateProductMutation,
+  useAddProductMutation,
+  useGetAllCategoriesQuery,
+  useDeleteProductMutation,
 } = serviceApi;
