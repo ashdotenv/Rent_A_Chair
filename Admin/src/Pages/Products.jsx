@@ -4,7 +4,7 @@ import {
     useGetAllProductsQuery,
     useUpdateProductMutation,
     useGetAllCategoriesQuery,
-    useDeleteProductMutation, // New hook for deleting products
+    useDeleteProductMutation, 
 } from "../Redux/Service";
 
 const conditionOptions = ["New", "Good", "Fair", "Poor"];
@@ -16,7 +16,7 @@ const Products = () => {
     const [editedValues, setEditedValues] = useState({});
     const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
     const [addProduct, { isLoading: isAdding }] = useAddProductMutation();
-    const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation(); // Delete mutation hook
+    const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation(); 
     const [isAddPopupOpen, setIsAddPopupOpen] = useState(false);
     const [newProduct, setNewProduct] = useState({
         name: "",
@@ -152,17 +152,20 @@ const Products = () => {
                                 <td className="p-4">{product.name}</td>
                                 <td className="p-4">{product.category.name}</td>
                                 <td className="p-4">{product.condition}</td>
-                                <td className="p-4">{product.pricePerDay}</td>
+                                <td className="p-4">${product.pricePerDay}</td>
                                 <td className="p-4">{product.isAvailable ? "Available" : "Unavailable"}</td>
                                 <td className="p-4">
-                                    <button className="bg-blue-500 text-white px-4 py-2 rounded mr-2" onClick={() => handleEdit(product)}>
+                                    <button
+                                        className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
+                                        onClick={() => handleEdit(product)}
+                                    >
                                         Edit
                                     </button>
                                     <button
                                         className="bg-red-500 text-white px-4 py-2 rounded"
                                         onClick={() => {
-                                            setProductToDelete(product.FurnitureId); // Set product to delete
-                                            setIsDeletePopupOpen(true); // Show delete popup
+                                            setProductToDelete(product.FurnitureId);
+                                            setIsDeletePopupOpen(true);
                                         }}
                                     >
                                         Delete

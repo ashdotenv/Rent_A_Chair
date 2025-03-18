@@ -1,16 +1,27 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import { useLazyGetProductByIdQuery } from "../Redux/Service";
+import { useGetProductByIdQuery } from "../Redux/Service";
+import { useDispatch } from "react-redux";
+import { addToCart, addToFavorites } from "../Redux/slice";
 
 const SingleProduct = () => {
-    const { id } = useParams(); // Get product ID from URL
-    const { data, isLoading, isError } = useLazyGetProductByIdQuery(id);
+    const { id } = useParams();
+    const { data, isLoading, isError } = useGetProductByIdQuery(id);
+    const dispatch = useDispatch();
 
     if (isLoading) return <p>Loading...</p>;
     if (isError) return <p>Error fetching product</p>;
-
-    const product = data?.product; // Extract product details
+    
+    const product = data?.product;
     if (!product) return <p>No product found</p>;
+
+    const handleAddToCart = () => {
+        dispatch(addToCart(product));
+    };
+
+    const handleAddToFavorites = () => {
+        dispatch(addToFavorites(product));
+    };
 
     return (
         <div className="p-6 max-w-4xl mx-auto bg-white shadow-lg rounded-lg">
@@ -51,6 +62,20 @@ const SingleProduct = () => {
             <p className="text-xs text-gray-500 mt-3">
                 Last updated: {new Date(product.updatedAt).toLocaleDateString()}
             </p>
+
+            {/* Action Buttons */}
+            <div className="mt-4 flex space-x-4">
+                <button 
+                    onClick={handleAddToCart} 
+                    className="bg-[#1980E5] text-white px-4 py-2 rounded-lg shadow hover:bg-[#0D141C] transition">
+                    Add to Cart
+                </button>
+                <button 
+                    onClick={handleAddToFavorites} 
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition">
+                    Add to Favorites
+                </button>
+            </div>
         </div>
     );
 };

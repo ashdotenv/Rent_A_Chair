@@ -14,7 +14,7 @@ const Login = () => {
         if (data.error) {
             toast.error(data.error.data.message)
         } else if (data.data.message) {
-            localStorage.setItem("loggedIn", true)
+            localStorage.setItem("adminLoggedIn", true)
             navigate("/products")
             toast.success(data.data.message)
         }

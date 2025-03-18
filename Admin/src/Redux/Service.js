@@ -53,11 +53,27 @@ export const serviceApi = createApi({
     getProductById: builder.query({
       query: (id) => ({
         url: `getProductById/${id}`,
+        method: "GET",
+      }),
+    }),
+    getAllOrders: builder.query({
+      query: () => ({
+        url: "/admin/getAllOrders",
+        method: "GET",
+      }),
+    }),
+    updateOrder: builder.mutation({
+      query: ({ body, OrderId }) => ({
+        url: `/admin/updateOrder/${OrderId}`,
+        method: "PATCH",
+        body: body,
       }),
     }),
   }),
 });
 export const {
+  useUpdateOrderMutation,
+  useGetAllOrdersQuery,
   useLazyGetProductByIdQuery,
   useAdminloginMutation,
   useGetAllProductsQuery,

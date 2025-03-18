@@ -101,13 +101,14 @@ enum OrderStatus {
 }
 
 model OrderItem {
-  orderItemId Int       @id @default(autoincrement())
-  orderId     Int
-  order       Order     @relation(fields: [orderId], references: [orderId])
-  furnitureId Int
-  furniture   Furniture @relation(fields: [furnitureId], references: [FurnitureId])
-  quantity    Int       @default(1)
-  subTotal    Float
+  orderItemId   Int       @id @default(autoincrement())
+  furnitureId   Int
+  furniture     Furniture @relation(fields: [furnitureId], references: [FurnitureId])
+  totalQuantity Int       @default(1)
+  noOfDays      Int       @default(1)
+  subTotal      Float
+  Order         Order?    @relation(fields: [orderOrderId], references: [orderId])
+  orderOrderId  Int?
 }
 
 model Coupon {

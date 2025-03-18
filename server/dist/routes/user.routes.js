@@ -1,8 +1,10 @@
 import express from "express";
-import { getMyDetails, getMyOrders, resetPassword, updateProfile, } from "../controllers/user.controller.js";
+import { getMyDetails, getMyOrders, placeOrder, resetPassword, updateProfile, } from "../controllers/user.controller.js";
 const router = express.Router();
 router.patch("/update-profile/:id", updateProfile);
 router.get("/getmydetails", getMyDetails);
+router.get("/getmyorders", getMyOrders);
 router.get("/myOrders", getMyOrders);
 router.get("/resetPassword", resetPassword);
+router.post("/placeOrder", placeOrder);
 export default router;

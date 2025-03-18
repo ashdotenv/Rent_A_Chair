@@ -62,6 +62,7 @@ const SearchProducts = () => {
                             <h3 className="text-xl font-semibold mt-4"
                                 dangerouslySetInnerHTML={{ __html: highlightText(product.name, query) }} />
                             <p className="text-gray-600">{product.description}</p>
+                            <p className="text-gray-600">{product.condition}</p>
 
                             {/* Clickable Hashtag for Category */}
                             <p

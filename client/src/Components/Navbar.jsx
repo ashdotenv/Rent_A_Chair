@@ -49,7 +49,7 @@ const Navbar = () => {
             <div className='container mx-auto flex justify-between items-center h-16 px-4'>
                 {/* Logo */}
                 <div className='text-xl font-bold text-[#1980E5]'>
-                    <Link to='/'>Logo</Link>
+                    <Link to='/'><img className='h-20' src="Logo.png" alt="" /></Link>
                 </div>
 
                 {/* Search Bar */}

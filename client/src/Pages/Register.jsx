@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useRegisterMutation } from "../Redux/Service";
 import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
 const Register = () => {
     const [register, { isError, isLoading }] = useRegisterMutation()
     const navigate = useNavigate()

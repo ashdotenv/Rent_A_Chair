@@ -1,17 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
-  FiHome,
-  FiHeart,
-  FiShoppingCart,
-  FiUser,
-  FiSearch,
   FiFacebook,
   FiTwitter,
   FiInstagram,
   FiGithub
 } from 'react-icons/fi';
+import { useDispatch } from 'react-redux';
+import { useMyDetailsQuery } from '../Redux/Service';
+import { addMyInfo } from '../Redux/slice';
 
 const Home = () => {
+  const dispatch = useDispatch()
+  const { data } = useMyDetailsQuery()
+  useEffect(() => {
+    if (data) {
+      dispatch(addMyInfo(data))
+    }
+  }, [data])
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Hero Section */}

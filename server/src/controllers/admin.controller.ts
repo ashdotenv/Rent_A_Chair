@@ -302,3 +302,81 @@ export const adminLogin = catchAsyncError(async function (
   const token = generateToken(checkAdmin.email);
   res.status(200).json({ message: "Admin Login Successful", token });
 });
+
+export const getAllOrders = catchAsyncError(async function (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  // Fetch all orders with their related order items and furniture details
+  const orders = await prisma.order.findMany({
+    include: {
+      orderItems: {
+        include: {
+          furniture: true, // Include the related furniture data
+        },
+      },
+      user: true, // Include user information for each order
+    },
+  });
+
+  if (!orders || orders.length === 0) {
+    return res.status(404).json({ message: "No orders found" });
+  }
+
+  // Return the orders to the admin
+  res.status(200).json({
+    message: "All orders retrieved successfully",
+    orders,
+  });
+});
+
+export const updateOrder = catchAsyncError(async function (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { orderId } = req.params; // Get the orderId from the request params
+  const { status, paymentStatus, totalPrice, updatedItems } = req.body; // Get the new data from the request body
+  console.log(orderId);
+
+  // Check if the order exists
+  const existingOrder = await prisma.order.findUnique({
+    where: { orderId: parseInt(orderId) },
+    include: { orderItems: true }, // Optionally include the order items for update
+  });
+
+  if (!existingOrder) {
+    return res.status(404).json({ message: "Order not found" });
+  }
+
+  // Update the order's status, payment status, and total price
+  const updatedOrder = await prisma.order.update({
+    where: { orderId: parseInt(orderId) },
+    data: {
+      status: status || existingOrder.status, // Update if a new value is provided
+      paymentStatus: paymentStatus || existingOrder.paymentStatus,
+      totalPrice: totalPrice || existingOrder.totalPrice,
+      updatedAt: new Date(),
+      orderItems: {
+        // Update the order items if they are included in the request body
+        update: updatedItems
+          ? updatedItems.map((item: any) => ({
+              where: { orderItemId: item.orderItemId },
+              data: {
+                totalQuantity: item.totalQuantity,
+                subTotal: item.subTotal,
+                noOfDays: item.noOfDays,
+              },
+            }))
+          : [],
+      },
+    },
+  });
+
+  // Send the response back with the updated order
+  return res.status(200).json({
+    message: "Order updated successfully",
+    order: updatedOrder,
+  });
+});

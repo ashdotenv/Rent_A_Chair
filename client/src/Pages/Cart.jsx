@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FaTrash, FaPlus, FaMinus } from 'react-icons/fa'; // Importing plus and minus icons
-import { calculateOrderValue, removeFromCart } from '../Redux/slice';
+import { FaTrash, FaPlus, FaMinus } from 'react-icons/fa';
+import { removeFromCart } from '../Redux/slice';
 import { Link } from 'react-router-dom';
 
 const Cart = () => {
@@ -10,14 +10,16 @@ const Cart = () => {
 
     const removeItem = (product) => {
         dispatch(removeFromCart(product));
-    }
+    };
 
-    // To store the local total days and quantity for each cart item
     const [daysAndQuantity, setDaysAndQuantity] = useState(cartItems.map(item => ({
-        id: item.FurnitureId, 
-        days: 1, 
-        quantity: 1 // Initial quantity is set to 1
+        id: item.FurnitureId,
+        days: 1,
+        quantity: 1
     })));
+
+    const [totalOrderValue, setTotalOrderValue] = useState(0);
+    const [bundle, setBundle] = useState(null);
 
     const handleChangeDays = (id, operation) => {
         setDaysAndQuantity(prevState => prevState.map(item =>
@@ -35,19 +37,45 @@ const Cart = () => {
         ));
     };
 
-    // Calculate the total order value locally
-    const calculateTotalValue = () => {
-        return cartItems.reduce((total, item) => {
+    const storeOrderSummary = () => {
+        const orderSummary = cartItems.map(item => {
             const { days, quantity } = daysAndQuantity.find(d => d.id === item.FurnitureId) || { days: 1, quantity: 1 };
-            return total + (days * quantity * item.pricePerDay);
-        }, 0);
+            return {
+                productId: item.FurnitureId,
+                totalDays: days,
+                quantity: quantity,
+                pricePerDay: item.pricePerDay, // Include product price
+                totalPrice: item.pricePerDay * days * quantity, // Calculate total price for the item
+                picture: item.images[0]?.imageUrl
+                , name: item.name
+            };
+        });
+
+        localStorage.setItem('order_summary', JSON.stringify(orderSummary));
     };
 
+
     useEffect(() => {
-        // Recalculate the total order value when cart items, days, or quantity change
-        const totalValue = calculateTotalValue();
-        dispatch(calculateOrderValue(totalValue));
-    }, [cartItems, daysAndQuantity, dispatch]);
+        const totalValue = cartItems.reduce((total, item) => {
+            const { days, quantity } = daysAndQuantity.find(d => d.id === item.FurnitureId) || { days: 1, quantity: 1 };
+            return total + (item.pricePerDay * days * quantity);
+        }, 0);
+        setTotalOrderValue(totalValue);
+
+        // Store order summary in local storage
+        storeOrderSummary();
+    }, [cartItems, daysAndQuantity]);
+
+    const createBundle = () => {
+        if (cartItems.length >= 2) {
+            setBundle({
+                name: "Furniture Bundle",
+                discount: 0.1,
+                totalValue: totalOrderValue * 0.9,
+                items: cartItems
+            });
+        }
+    };
 
     return (
         <div className="container mx-auto p-6">
@@ -120,17 +148,27 @@ const Cart = () => {
             </div>
 
             {cartItems.length > 0 && (
-                <div className="mt-6 flex gap-2 items-center justify-end">
+                <div className="mt-6 flex flex-col gap-4 items-end">
                     <div className="text-xl font-semibold">
-                        <p>Total Order Value: <span className="text-blue-600">${calculateTotalValue()}</span></p>
+                        <p>Total Order Value: <span className="text-blue-600">${totalOrderValue.toFixed(2)}</span></p>
                     </div>
-                    <Link to={"/checkout"} className="border-2 p-4 bg-blue-700 text-white rounded-xl">
+                    {cartItems.length >= 2 && (
+                        <button onClick={createBundle} className="bg-green-600 text-white px-4 py-2 rounded-md">Create Bundle</button>
+                    )}
+                    {bundle && (
+                        <div className="p-4 border rounded-md shadow-md bg-gray-100">
+                            <h3 className="font-semibold">{bundle.name}</h3>
+                            <p>Discount Applied: 10%</p>
+                            <p>New Total: ${bundle.totalValue.toFixed(2)}</p>
+                        </div>
+                    )}
+                    <Link to="/checkout" className="border-2 p-4 bg-blue-700 text-white rounded-xl">
                         Checkout
                     </Link>
                 </div>
             )}
         </div>
     );
-}
+};
 
 export default Cart;

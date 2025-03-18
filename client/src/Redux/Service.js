@@ -1,6 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { BACKEND_URL } from "../config";
-import { data } from "react-router-dom";
 export const serviceApi = createApi({
   reducerPath: "serviceApi",
   baseQuery: fetchBaseQuery({
@@ -39,6 +38,7 @@ export const serviceApi = createApi({
         body: data,
       }),
     }),
+
     getAllProducts: builder.query({
       query: () => ({
         url: "getAllProducts",
@@ -48,8 +48,10 @@ export const serviceApi = createApi({
     getProductById: builder.query({
       query: (id) => ({
         url: `getProductById/${id}`,
+        method: "GET",
       }),
     }),
+
     resetPassword: builder.query({
       query: () => ({
         url: "/user/resetPassword",
@@ -62,10 +64,25 @@ export const serviceApi = createApi({
         method: "GET",
       }),
     }),
+    placeOrder: builder.mutation({
+      query: (data) => ({
+        url: "/user/placeOrder",
+        method: "POST",
+        body: data,
+      }),
+    }),
+    getMyOrders: builder.query({
+      query: () => ({
+        url: "/user/getmyorders",
+        method: "GET",
+      }),
+    }),
   }),
 });
 export const {
-  useLazyGetProductByIdQuery,
+  useGetMyOrdersQuery,
+  usePlaceOrderMutation,
+  useGetProductByIdQuery,
   useLoginMutation,
   useMyDetailsQuery,
   useUpdateInfoMutation,
