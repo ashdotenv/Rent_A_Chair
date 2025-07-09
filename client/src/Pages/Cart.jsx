@@ -19,7 +19,6 @@ const Cart = () => {
     })));
 
     const [totalOrderValue, setTotalOrderValue] = useState(0);
-    const [bundle, setBundle] = useState(null);
 
     const handleChangeDays = (id, operation) => {
         setDaysAndQuantity(prevState => prevState.map(item =>
@@ -61,21 +60,9 @@ const Cart = () => {
             return total + (item.pricePerDay * days * quantity);
         }, 0);
         setTotalOrderValue(totalValue);
-
-        // Store order summary in local storage
         storeOrderSummary();
     }, [cartItems, daysAndQuantity]);
 
-    const createBundle = () => {
-        if (cartItems.length >= 2) {
-            setBundle({
-                name: "Furniture Bundle",
-                discount: 0.1,
-                totalValue: totalOrderValue * 0.9,
-                items: cartItems
-            });
-        }
-    };
 
     return (
         <div className="container mx-auto p-6">
@@ -152,16 +139,7 @@ const Cart = () => {
                     <div className="text-xl font-semibold">
                         <p>Total Order Value: <span className="text-blue-600">${totalOrderValue.toFixed(2)}</span></p>
                     </div>
-                    {cartItems.length >= 2 && (
-                        <button onClick={createBundle} className="bg-green-600 text-white px-4 py-2 rounded-md">Create Bundle</button>
-                    )}
-                    {bundle && (
-                        <div className="p-4 border rounded-md shadow-md bg-gray-100">
-                            <h3 className="font-semibold">{bundle.name}</h3>
-                            <p>Discount Applied: 10%</p>
-                            <p>New Total: ${bundle.totalValue.toFixed(2)}</p>
-                        </div>
-                    )}
+
                     <Link to="/checkout" className="border-2 p-4 bg-blue-700 text-white rounded-xl">
                         Checkout
                     </Link>

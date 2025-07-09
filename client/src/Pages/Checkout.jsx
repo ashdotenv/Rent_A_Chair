@@ -1,21 +1,25 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { useGetProductByIdQuery, usePlaceOrderMutation } from '../Redux/Service'
-
+import { useCreateKhaltiPaymentMutation, useGetKhaltiPaymentDetailsQuery, useGetProductByIdQuery, usePlaceOrderMutation, useVerifyKhaltiPaymentMutation } from '../Redux/Service'
+import { toast } from "react-hot-toast"
+import { useNavigate } from "react-router-dom"
 const Checkout = () => {
     const [totalOrderValue, setTotalOrderValue] = useState(0)
     const { myInfo } = useSelector(state => state.service)
     const dispatch = useDispatch()
     const [paymentMethod, setPaymentMethod] = useState('stripe')
     const [placeOrder, placeOrderData] = usePlaceOrderMutation()
-
+    const navigate = useNavigate()
+    const [createKhaltiPayment, { data: khaltiCreateData, isLoading: isKhaltiCreating }] = useCreateKhaltiPaymentMutation()
+    const [verifyKhaltiPayment, { data: khaltiVerifyData, isLoading: isKhaltiVerifying }] = useVerifyKhaltiPaymentMutation()
+    const [khaltiPaymentId, setKhaltiPaymentId] = useState(null)
+    useGetKhaltiPaymentDetailsQuery()
     // Calculate the total order value from order_summary in localStorage
     useEffect(() => {
         const orderSummary = JSON.parse(localStorage.getItem('order_summary')) || []
         const total = orderSummary.reduce((acc, item) => acc + (item.totalPrice || 0), 0)
         setTotalOrderValue(total)
     }, [])
-
     // Handler to submit the updated info (e.g., dispatching the update to the store)
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -34,8 +38,8 @@ const Checkout = () => {
         const data = { userData: obj, orderData: orderData, }
         // Dispatch placeOrder action with the obj and orderData
         try {
-            await placeOrder(data).unwrap();  // .unwrap() gives us access to the response or error
-            console.log("Order placed successfully!");
+            const order = await placeOrder(data).unwrap();  // .unwrap() gives us access to the response or error
+            navigate("/profile/myOrders")
         } catch (error) {
             console.error("Failed to place order:", error);
         }
@@ -135,6 +139,18 @@ const Checkout = () => {
                                 className="mr-2"
                             />
                             <label htmlFor="stripe" className="text-lg">Stripe</label>
+                        </div>
+                        <div className="flex items-center">
+                            <input
+                                type="radio"
+                                id="khalti"
+                                name="paymentMethod"
+                                value="khalti"
+                                checked={paymentMethod === 'khalti'}
+                                onChange={() => setPaymentMethod('khalti')}
+                                className="mr-2"
+                            />
+                            <label htmlFor="khalti" className="text-lg">Khalti</label>
                         </div>
                         <div className="flex items-center">
                             <input

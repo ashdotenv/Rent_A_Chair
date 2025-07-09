@@ -1,22 +1,28 @@
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
-import NotFound from './Pages/NotFound';
-import Login from './Pages/Login';
-import Register from './Pages/Register';
 import { Toaster } from "react-hot-toast";
-import Home from './Pages/Home';
 import Navbar from './Components/Navbar';
-import Profile from './Pages/Profile';
-import Cart from './Pages/Cart';
-import Favorites from './Pages/Favorites';
-import SearchProducts from './Pages/SearchProducts';
-import Checkout from './Pages/Checkout';
-import SingleProduct from './Pages/SingleProduct';
-import ResetPassword from "./Pages/ResetPassword";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleLoginStatus } from "./Redux/slice";
 import { useMyDetailsQuery } from "./Redux/Service";
 import Settings from "./Components/Profile/Settings";
-import MyOrders from "./Pages/MyOrders";
+import {
+  NotFound,
+  Login,
+  Register,
+  Home,
+  Profile,
+  Cart,
+  Favorites,
+  SearchProducts,
+  Checkout,
+  SingleProduct,
+  ResetPassword,
+  MyOrders,
+  ChangePassword,
+  PaymentFaliure,
+  PaymentSuccess
+} from './Pages/Index';
+import PaymentFailure from "./Pages/PaymentFaliure";
 
 function App() {
   const dispatch = useDispatch();
@@ -40,10 +46,13 @@ function App() {
           <>
             <Route path='/resetPassword' element={<ResetPassword />} />
             <Route path='/profile' element={<Profile />} >
-              <Route path='settings' element={<Settings />} />
+              <Route path='se2ttings' element={<Settings />} />
               <Route path='myOrders' element={<MyOrders />} />
             </Route>
             <Route path='/checkout' element={<Checkout />} />
+            <Route path='/changePassword' element={<ChangePassword />} />
+            <Route path='/paymentFailure' element={<PaymentFailure />} />
+            <Route path='/paymentSuccess' element={<PaymentSuccess />} />
           </>
         ) : (
           // Redirect to login page if the user is not logged in for protected routes

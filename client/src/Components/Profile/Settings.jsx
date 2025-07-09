@@ -1,13 +1,14 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useMyDetailsQuery, useUpdateInfoMutation } from "../../Redux/Service";
 import { addMyInfo } from "../../Redux/slice";
-import axios from 'axios'; // Make sure to install axios or use fetch
+import axios from 'axios';
 import { BACKEND_URL } from "../../config";
+import { Link } from "react-router-dom";
 
 export default function Settings() {
     const dispatch = useDispatch();
-    const { data: myInfo, refetch } = useMyDetailsQuery(); // Fetch user details
+    const { data: myInfo, refetch } = useMyDetailsQuery();
 
     const { userId } = useSelector((state) => state.service);
     const [updateInfo, { isLoading, error }] = useUpdateInfoMutation();
@@ -15,26 +16,24 @@ export default function Settings() {
     const [fullName, setFullName] = useState("");
     const [phone, setPhone] = useState("");
     const [address, setAddress] = useState("");
-    const [profilePic, setProfilePic] = useState(myInfo?.profilePic || null); // Initially set to null
+    const [profilePic, setProfilePic] = useState(null);
 
-    // Populate state when myInfo is available
     useEffect(() => {
         if (myInfo) {
             setFullName(myInfo.fullName || "");
             setPhone(myInfo.phone || "");
             setAddress(myInfo.address || "");
-            setProfilePic(myInfo.profilePic || null); // Initialize profilePic state
+            setProfilePic(myInfo.profilePic || null);
         }
     }, [myInfo]);
-    console.log(profilePic);
+
     const handleSave = async () => {
         const updatedData = { fullName, phone, address, profilePic };
 
         try {
-            // Sending the data to the backend
-            await updateInfo({ userId, data: updatedData }); // Update user info
-            await refetch(); // Refetch updated user details
-            dispatch(addMyInfo(myInfo)); // Update Redux state after refetch
+            await updateInfo({ userId, data: updatedData });
+            await refetch();
+            dispatch(addMyInfo(myInfo));
             console.log("Updated user info:", myInfo);
         } catch (err) {
             console.error("Error updating profile:", err);
@@ -42,26 +41,24 @@ export default function Settings() {
     };
 
     const handleRemoveProfilePic = () => {
-        setProfilePic(null); // Remove the profile pic (set to null)
+        setProfilePic(null);
     };
 
     const handleAddProfilePic = (e) => {
         const file = e.target.files[0];
         if (file) {
             const formData = new FormData();
-            formData.append("profilePic", file); // Send the file as binary data
+            formData.append("profilePic", file);
 
-            // Send the image to the backend using axios
-            axios.defaults.withCredentials = true
+            axios.defaults.withCredentials = true;
             axios
                 .patch(BACKEND_URL + "/user/update-Profile/" + userId, formData, {
                     headers: {
                         "Content-Type": "multipart/form-data",
-
                     },
                 })
                 .then((response) => {
-                    setProfilePic(response.data.profilePic); // Update the profilePic state with the binary data response from the backend
+                    setProfilePic(response.data.profilePic);
                 })
                 .catch((err) => {
                     console.error("Error uploading profile picture:", err);
@@ -69,132 +66,144 @@ export default function Settings() {
         }
     };
 
-    const handleResetPassword = () => {
-        const { data } = useResetPasswordQuery();
-        console.log(data);
-    };
+
 
     return (
-        <div className="w-full h-screen flex justify-center items-center bg-gray-50">
-            <div className="w-4/5 max-w-4xl p-8 bg-white rounded-lg">
-                <h1 className="text-3xl font-semibold text-center mb-6">Profile</h1>
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full space-y-8">
+                <div>
+                    <h1 className="text-center text-3xl font-extrabold text-gray-900">
+                        Profile
+                    </h1>
+                </div>
                 <div className="space-y-6">
                     {/* Profile Picture */}
-                    <div className="relative flex justify-center items-center mb-6">
-                        {profilePic ? (
-                            <img
-                                src={profilePic} // Convert binary data to image
-                                alt="Profile"
-                                className="w-24 h-24 rounded-full object-cover"
-                            />
-                        ) : (
-                            <div className="w-24 h-24 rounded-full bg-gray-300 animate-pulse"></div> // Skeleton loader
-                        )}
-
-                        {/* Add and Remove Profile Picture buttons */}
-                        <div className="absolute bottom-0 right-0 space-x-2">
-                            {!profilePic && (
-                                <button
-                                    onClick={() => document.getElementById('fileInput').click()}
-                                    className="bg-blue-600 text-white p-2 rounded-full"
-                                >
-                                    Add
-                                </button>
+                    <div className="flex flex-col items-center">
+                        <div className="relative">
+                            {profilePic ? (
+                                <img
+                                    src={profilePic}
+                                    alt="Profile"
+                                    className="w-24 h-24 rounded-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-24 h-24 rounded-full bg-gray-300 animate-pulse"></div>
                             )}
 
-                            {profilePic && (
-                                <>
-                                    <button
-                                        onClick={handleRemoveProfilePic}
-                                        className="bg-red-600 text-white p-2 rounded-full"
-                                    >
-                                        Remove
-                                    </button>
+                            {/* Add and Remove Profile Picture buttons */}
+                            <div className="absolute bottom-0 right-0 space-x-2">
+                                {!profilePic && (
                                     <button
                                         onClick={() => document.getElementById('fileInput').click()}
-                                        className="bg-blue-600 text-white p-2 rounded-full"
+                                        className="bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 hover:text-white rounded-full p-2"
                                     >
-                                        Change
+                                        +
                                     </button>
-                                </>
-                            )}
-                        </div>
+                                )}
 
-                        <input
-                            type="file"
-                            id="fileInput"
-                            accept="image/*"
-                            onChange={handleAddProfilePic}
-                            className="hidden" // Hide the default file input
-                        />
+                                {profilePic && (
+                                    <>
+                                        <button
+                                            onClick={handleRemoveProfilePic}
+                                            className="bg-red-600/20 text-red-400 hover:bg-red-600/30 hover:text-white rounded-full p-2"
+                                        >
+                                            -
+                                        </button>
+                                        <button
+                                            onClick={() => document.getElementById('fileInput').click()}
+                                            className="bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 hover:text-white rounded-full p-2"
+                                        >
+                                            C
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+
+                            <input
+                                type="file"
+                                id="fileInput"
+                                accept="image/*"
+                                onChange={handleAddProfilePic}
+                                className="hidden"
+                            />
+                        </div>
                     </div>
 
                     {/* Email Field */}
-                    <div className="flex justify-between">
-                        <label className="text-lg font-medium">Email</label>
+                    <div className="space-y-1">
+                        <label htmlFor="email" className="block text-lg font-medium text-gray-700">Email</label>
                         <input
+                            id="email"
                             type="email"
                             value={myInfo?.email || ""}
                             disabled
-                            className="bg-gray-100 text-gray-700 border border-gray-300 rounded-md p-2 w-2/3"
+                            className="mt-1 block w-full bg-gray-50 text-gray-700 border border-gray-300 rounded-md py-2 px-3 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
                     </div>
 
                     {/* Full Name Field */}
-                    <div className="flex justify-between">
-                        <label className="text-lg font-medium">Full Name</label>
+                    <div className="space-y-1">
+                        <label htmlFor="fullName" className="block text-lg font-medium text-gray-700">Full Name</label>
                         <input
+                            id="fullName"
                             type="text"
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
-                            className="border border-gray-300 rounded-md p-2 w-2/3"
+                            placeholder="Enter your full name"
+                            className="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
                     </div>
 
                     {/* Phone Field */}
-                    <div className="flex justify-between">
-                        <label className="text-lg font-medium">Phone</label>
+                    <div className="space-y-1">
+                        <label htmlFor="phone" className="block text-lg font-medium text-gray-700">Phone</label>
                         <input
+                            id="phone"
                             type="text"
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
-                            className="border border-gray-300 rounded-md p-2 w-2/3"
+                            placeholder="Enter your phone number"
+                            className="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
                     </div>
 
                     {/* Address Field */}
-                    <div className="flex justify-between">
-                        <label className="text-lg font-medium">Address</label>
+                    <div className="space-y-1">
+                        <label htmlFor="address" className="block text-lg font-medium text-gray-700">Address</label>
                         <input
+                            id="address"
                             type="text"
                             value={address}
                             onChange={(e) => setAddress(e.target.value)}
-                            className="border border-gray-300 rounded-md p-2 w-2/3"
+                            placeholder="Enter your address"
+                            className="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
                     </div>
 
                     {/* Password Field with Reset Button */}
-                    <div className="flex justify-between">
-                        <label className="text-lg font-medium">Password</label>
-                        <input
-                            type="text"
-                            value={"********"}
-                            onChange={(e) => setAddress(e.target.value)}
-                            className="border border-gray-300 rounded-md p-2 w-2/3"
-                        />
-                        <button
-                            onClick={handleResetPassword}
-                            className="text-white px-6 py-2 rounded-md bg-blue-700 transition duration-300"
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-1 flex-1 mr-4">
+                            <label htmlFor="password" className="block text-lg font-medium text-gray-700">Password</label>
+                            <input
+                                id="password"
+                                type="password"
+                                value={"********"}
+                                disabled
+                                className="mt-1 block w-full bg-gray-50 text-gray-700 border border-gray-300 rounded-md py-2 px-3 shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            />
+                        </div>
+                        <Link to={"/changePassword"}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300"
                         >
-                            Reset Password
-                        </button>
+                            Change Password
+                        </Link>
                     </div>
 
                     {/* Save Button */}
-                    <div className="flex justify-center mt-6">
+                    <div>
                         <button
                             onClick={handleSave}
-                            className={`bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition duration-300 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                             disabled={isLoading}
                         >
                             {isLoading ? "Saving..." : "Save Changes"}

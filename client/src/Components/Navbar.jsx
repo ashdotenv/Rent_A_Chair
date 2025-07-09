@@ -77,7 +77,7 @@ const Navbar = () => {
                     {/* Conditional Auth Buttons */}
                     {loggedInStatus ? (
                         <>
-                            <Link to='/profile' className='flex items-center gap-2 hover:text-[#1980E5]'>
+                            <Link to='/profile/settings' className='flex items-center gap-2 hover:text-[#1980E5]'>
                                 <FiUser size={24} />
                                 <span>{loggedInStatus.name}</span>
                             </Link>
@@ -122,5 +122,6 @@ const Navbar = () => {
         </nav>
     );
 };
+
 
 export default Navbar;

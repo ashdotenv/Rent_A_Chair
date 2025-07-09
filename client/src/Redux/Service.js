@@ -77,9 +77,40 @@ export const serviceApi = createApi({
         method: "GET",
       }),
     }),
+    changePassword: builder.mutation({
+      query: ({ previousPassword, newPassword }) => ({
+        url: "/user/changePassword",
+        method: "PATCH",
+        body: { previousPassword, newPassword },
+      }),
+    }),
+    createKhaltiPayment: builder.mutation({
+      query: (body) => ({
+        url: "/user/khalti/create",
+        method: "POST",
+        body: body,
+      }),
+    }),
+    getKhaltiPaymentDetails: builder.query({
+      query: (paymentId) => ({
+        url: `/user/khalti/${paymentId}`,
+        method: "GET",
+      }),
+    }),
+    verifyKhaltiPayment: builder.mutation({
+      query: (body) => ({
+        url: "/user/khalti/verify",
+        method: "POST",
+        body: body,
+      }),
+    }),
   }),
 });
 export const {
+  useCreateKhaltiPaymentMutation,
+  useGetKhaltiPaymentDetailsQuery,
+  useVerifyKhaltiPaymentMutation,
+  useChangePasswordMutation,
   useGetMyOrdersQuery,
   usePlaceOrderMutation,
   useGetProductByIdQuery,
@@ -90,4 +121,5 @@ export const {
   useGetAllProductsQuery,
   useResetPasswordQuery,
   useLogoutMutation,
+  
 } = serviceApi;

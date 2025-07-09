@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,135 +7,456 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  userId               Int        @id @default(autoincrement())
-  fullName             String
-  username             String     @unique
-  password             String
-  email                String     @unique
-  phone                String?
-  address              String?
-  profilePic           String?
-  role                 Role       @default(User)
-  passwordResetToken   String?
-  passwordTokenExpires DateTime?
-  createdAt            DateTime   @default(now())
-  updatedAt            DateTime?  @updatedAt
-  orders               Order[]
-  referralsGiven       Referral[] @relation("ReferralReferrer") // Referrals made by the user
-  referralsReceived    Referral[] @relation("ReferralReferee") // Referrals received by the user
-}
-
 enum Role {
-  User
-  Admin
+  USER
+  ADMIN
 }
 
-model Furniture {
-  FurnitureId Int         @id @default(autoincrement())
-  name        String
-  categoryId  Int
-  category    Category    @relation("FurnitureCategory", fields: [categoryId], references: [CategoryId])
-  condition   Condition
-  pricePerDay Float
-  description String
-  isAvailable Boolean     @default(true)
-  dimensions  String?
-  material    String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime?   @updatedAt
-  images      Image[]
-  orderItems  OrderItem[]
-  Coupon      Coupon[]
+enum FurnitureCategory {
+  SOFA
+  BED
+  TABLE
+  CHAIR
+  WARDROBE
+  OTHER
 }
 
-model Image {
-  ImageId     Int       @id @default(autoincrement())
-  imageUrl    String
-  furniture   Furniture @relation(fields: [furnitureId], references: [FurnitureId])
-  furnitureId Int
+enum RentalType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  SUBSCRIPTION
 }
 
-enum Condition {
-  New
-  Good
-  Fair
-  Poor
+enum RentalStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  RENT_TO_OWN_PENDING
+  RENT_TO_OWN_ACTIVE
+  RENT_TO_OWN_COMPLETED
 }
 
-model Category {
-  CategoryId  Int         @id @default(autoincrement())
-  name        String
-  description String?
-  furniture   Furniture[] @relation("FurnitureCategory")
+enum PaymentMethod {
+  CASH
+  KHALTI
+  STRIPE
+  PAYPAL
 }
 
 enum PaymentStatus {
-  Pending
-  Completed
-  Failed
-  Refunded
-}
-
-model Order {
-  orderId       Int           @id @default(autoincrement())
-  userId        Int
-  user          User          @relation(fields: [userId], references: [userId])
-  totalPrice    Float
-  status        OrderStatus   @default(Pending)
-  paymentStatus PaymentStatus @default(Pending)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime?     @updatedAt
-  orderItems    OrderItem[]
-}
-
-enum OrderStatus {
-  Pending
-  Confirmed
-  Shipped
-  Delivered
-  Canceled
-}
-
-model OrderItem {
-  orderItemId   Int       @id @default(autoincrement())
-  furnitureId   Int
-  furniture     Furniture @relation(fields: [furnitureId], references: [FurnitureId])
-  totalQuantity Int       @default(1)
-  noOfDays      Int       @default(1)
-  subTotal      Float
-  Order         Order?    @relation(fields: [orderOrderId], references: [orderId])
-  orderOrderId  Int?
-}
-
-model Coupon {
-  CouponId     Int        @id @default(autoincrement())
-  code         String     @unique
-  discount     Float
-  isPercentage Boolean
-  furnitureId  Int?
-  furniture    Furniture? @relation(fields: [furnitureId], references: [FurnitureId])
-  expiryDate   DateTime?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime?  @updatedAt
-  isActive     Boolean    @default(true)
-}
-
-model Referral {
-  referralId         Int            @id @default(autoincrement())
-  referrerId         Int // User who is referring
-  refereeId          Int // User who is being referred
-  referralCode       String         @unique // Unique referral code for tracking
-  discountPercentage Float // Discount percentage earned by referrer
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime?      @updatedAt
-  referrer           User           @relation("ReferralReferrer", fields: [referrerId], references: [userId])
-  referee            User           @relation("ReferralReferee", fields: [refereeId], references: [userId])
-  status             ReferralStatus @default(PENDING)
-}
-
-enum ReferralStatus {
+  SUCCESS
+  FAILED
   PENDING
-  REWARDED
-  EXPIRED
+  REFUNDED
+}
+
+enum DeliveryStatus {
+  PENDING
+  SHIPPED
+  IN_TRANSIT
+  DELIVERED
+  RETURNED
+  CANCELLED
+}
+
+enum ConditionReportSeverity {
+  MINOR
+  MODERATE
+  SEVERE
+  CRITICAL
+}
+
+model User {
+  id                     String                  @id @default(uuid())
+  fullName               String
+  email                  String                  @unique
+  password               String
+  phone                  String?
+  address                String?
+  role                   Role                    @default(USER)
+  loyaltyPoints          Int                     @default(0)
+  referralCode           String                  @unique
+  referredById           String?
+  referredBy             User?                   @relation("ReferralParent", fields: [referredById], references: [id])
+  referralsMade          User[]                  @relation("ReferralParent")
+  rentals                Rental[]
+  ratings                Rating[]
+  loyaltyBonuses         LoyaltyBonus[]
+  damageReports          DamageReport[]
+  wishlistItems          WishlistItem[]
+  subscriptions          Subscription[]
+  paymentMethods         UserPaymentMethod[]
+  notifications          Notification[]
+  rentToOwnAgreements    RentToOwnAgreement[]
+  furnitureSwaps         FurnitureSwap[]         @relation("UserInitiatedSwaps")
+  receivedFurnitureSwaps FurnitureSwap[]         @relation("UserReceivedSwaps")
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  furnitureConditionLogs FurnitureConditionLog[] @relation("ConditionInspector")
+  inventoryMovements     InventoryMovement[]     @relation("InventoryMover")
+  maintenanceRecords     MaintenanceRecord[]     @relation("MaintenancePerformer")
+}
+
+model Furniture {
+  id                      String                  @id @default(uuid())
+  title                   String
+  description             String
+  category                FurnitureCategory
+  material                String
+  color                   String
+  dimensions              String
+  availableQuantity       Int
+  dailyRate               Float
+  weeklyRate              Float
+  monthlyRate             Float
+  valuationPrice          Float
+  originalPrice           Float
+  purchaseDate            DateTime
+  conditionScore          Int
+  wearLevel               Int
+  tags                    String
+  isFeatured              Boolean                 @default(false)
+  isArchived              Boolean                 @default(false)
+  currentLocation         String?
+  lastInspectedAt         DateTime?
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+  ratings                 Rating[]
+  rentals                 Rental[]
+  damageReports           DamageReport[]
+  images                  FurnitureImage[]
+  bundleItems             BundleItem[]
+  wishlistItems           WishlistItem[]
+  maintenanceRecords      MaintenanceRecord[]
+  rentToOwnOptions        RentToOwnAgreement[]
+  inventoryMovements      InventoryMovement[]
+  furnitureConditionLogs  FurnitureConditionLog[]
+  initiatedFurnitureSwaps FurnitureSwap[]         @relation("InitiatorFurnitureSwap")
+  requestedFurnitureSwaps FurnitureSwap[]         @relation("RequesterFurnitureSwap")
+}
+
+model FurnitureImage {
+  id          String    @id @default(uuid())
+  furnitureId String
+  url         String
+  furniture   Furniture @relation(fields: [furnitureId], references: [id])
+}
+
+model Rental {
+  id                     String                     @id @default(cuid())
+  userId                 String
+  furnitureId            String?
+  bundleId               String?
+  rentalType             RentalType
+  status                 RentalStatus
+  paymentMethod          PaymentMethod
+  paymentStatus          PaymentStatus
+  startDate              DateTime
+  endDate                DateTime
+  totalAmount            Float
+  discountCode           String?                    @default("")
+  deliveryStreet         String
+  deliveryCity           String
+  deliveryState          String
+  deliveryPostalCode     String
+  deliveryCountry        String
+  deliveryStatus         DeliveryStatus             @default(PENDING)
+  deliveryTrackingNumber String?
+  estimatedDeliveryDate  DateTime?
+  actualDeliveryDate     DateTime?
+  returnScheduledAt      DateTime?
+  returnedAt             DateTime?
+  notes                  String?
+  createdAt              DateTime                   @default(now())
+  updatedAt              DateTime                   @updatedAt
+  user                   User                       @relation(fields: [userId], references: [id])
+  furniture              Furniture?                 @relation(fields: [furnitureId], references: [id])
+  bundle                 FurnitureBundle?           @relation(fields: [bundleId], references: [id])
+  payment                Payment?
+  loyaltyBonus           LoyaltyBonus?
+  maintenanceServices    RentalMaintenanceService[]
+  // Corrected: Removed the @relation from Rental.id
+  rentToOwnAgreement     RentToOwnAgreement?
+  discount               Discount?                  @relation("DiscountRentals", fields: [discountCode], references: [code])
+  damageReports          DamageReport[]
+  deliveryUpdates        DeliveryUpdate[]
+}
+
+model Rating {
+  id          String    @id @default(uuid())
+  userId      String
+  furnitureId String
+  score       Int
+  comment     String?
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id])
+  furniture   Furniture @relation(fields: [furnitureId], references: [id])
+}
+
+model Payment {
+  id                  String               @id @default(uuid())
+  rentalId            String               @unique
+  paymentMethod       PaymentMethod
+  status              PaymentStatus
+  transactionId       String?
+  amount              Float
+  paidAt              DateTime?
+  gatewayMeta         Json?
+  rental              Rental               @relation(fields: [rentalId], references: [id])
+  invoiceUrl          String?
+  nextPaymentDue      DateTime?
+  subscriptionPayment SubscriptionPayment?
+}
+
+model DamageReport {
+  id           String                  @id @default(uuid())
+  furnitureId  String
+  reportedById String
+  rentalId     String?
+  description  String
+  severity     ConditionReportSeverity
+  costOfRepair Float?
+  resolved     Boolean                 @default(false)
+  resolvedAt   DateTime?
+  adminNotes   String?
+  createdAt    DateTime                @default(now())
+  furniture    Furniture               @relation(fields: [furnitureId], references: [id])
+  reporter     User                    @relation(fields: [reportedById], references: [id])
+  rental       Rental?                 @relation(fields: [rentalId], references: [id])
+}
+
+model LoyaltyBonus {
+  id       String   @id @default(uuid())
+  userId   String
+  rentalId String   @unique
+  points   Int
+  earnedAt DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id])
+  rental   Rental   @relation(fields: [rentalId], references: [id])
+}
+
+model SubscriptionPlan {
+  id               String         @id @default(uuid())
+  name             String         @unique
+  description      String?
+  durationInMonths Int
+  pricePerMonth    Float
+  benefits         String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  subscriptions    Subscription[]
+}
+
+model Subscription {
+  id                   String                @id @default(uuid())
+  userId               String
+  planId               String
+  startDate            DateTime              @default(now())
+  endDate              DateTime
+  isActive             Boolean               @default(true)
+  autoRenew            Boolean               @default(false)
+  stripeSubscriptionId String?               @unique
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  user                 User                  @relation(fields: [userId], references: [id])
+  plan                 SubscriptionPlan      @relation(fields: [planId], references: [id])
+  payments             SubscriptionPayment[]
+}
+
+model SubscriptionPayment {
+  id             String        @id @default(uuid())
+  subscriptionId String
+  paymentId      String        @unique
+  amount         Float
+  paymentDate    DateTime      @default(now())
+  status         PaymentStatus
+  subscription   Subscription  @relation(fields: [subscriptionId], references: [id])
+  payment        Payment       @relation(fields: [paymentId], references: [id])
+}
+
+model FurnitureBundle {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  description String?
+  price       Float
+  imageUrl    String?
+  isFeatured  Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  bundleItems BundleItem[]
+  rentals     Rental[]
+}
+
+model BundleItem {
+  id          String          @id @default(uuid())
+  bundleId    String
+  furnitureId String
+  quantity    Int             @default(1)
+  bundle      FurnitureBundle @relation(fields: [bundleId], references: [id])
+  furniture   Furniture       @relation(fields: [furnitureId], references: [id])
+}
+
+model WishlistItem {
+  id          String    @id @default(uuid())
+  userId      String
+  furnitureId String
+  addedAt     DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id])
+  furniture   Furniture @relation(fields: [furnitureId], references: [id])
+
+  @@unique([userId, furnitureId])
+}
+
+model UserPaymentMethod {
+  id                 String        @id @default(uuid())
+  userId             String
+  methodType         PaymentMethod
+  providerCustomerId String?
+  lastFour           String?
+  expirationDate     String?
+  isDefault          Boolean       @default(false)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  user               User          @relation(fields: [userId], references: [id])
+
+  @@unique([userId, methodType, providerCustomerId])
+}
+
+model Discount {
+  id              String   @id @default(uuid())
+  code            String   @unique
+  discountType    String
+  value           Float
+  minRentalAmount Float?
+  maxUses         Int?
+  uses            Int      @default(0)
+  validFrom       DateTime
+  validUntil      DateTime
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  appliedRentals  Rental[] @relation("DiscountRentals")
+}
+
+model FurnitureConditionLog {
+  id             String    @id @default(uuid())
+  furnitureId    String
+  recordedAt     DateTime  @default(now())
+  conditionScore Int
+  wearLevel      Int
+  notes          String?
+  inspectorId    String?
+  furniture      Furniture @relation(fields: [furnitureId], references: [id])
+  inspector      User?     @relation("ConditionInspector", fields: [inspectorId], references: [id])
+}
+
+model DeliveryUpdate {
+  id        String         @id @default(uuid())
+  rentalId  String
+  timestamp DateTime       @default(now())
+  status    DeliveryStatus
+  location  String?
+  notes     String?
+  rental    Rental         @relation(fields: [rentalId], references: [id])
+}
+
+model InventoryMovement {
+  id          String    @id @default(uuid())
+  furnitureId String
+  type        String
+  quantity    Int
+  reason      String?
+  movedBy     String?
+  movedAt     DateTime  @default(now())
+  furniture   Furniture @relation(fields: [furnitureId], references: [id])
+  mover       User?     @relation("InventoryMover", fields: [movedBy], references: [id])
+}
+
+model Service {
+  id                 String                     @id @default(uuid())
+  name               String                     @unique
+  description        String?
+  price              Float
+  isMaintenance      Boolean                    @default(true)
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+  rentalServices     RentalMaintenanceService[]
+  maintenanceRecords MaintenanceRecord[]
+}
+
+model RentalMaintenanceService {
+  id          String    @id @default(uuid())
+  rentalId    String
+  serviceId   String
+  price       Float
+  performedAt DateTime?
+  notes       String?
+  rental      Rental    @relation(fields: [rentalId], references: [id])
+  service     Service   @relation(fields: [serviceId], references: [id])
+}
+
+model MaintenanceRecord {
+  id          String    @id @default(uuid())
+  furnitureId String
+  serviceId   String
+  performedAt DateTime  @default(now())
+  cost        Float?
+  notes       String?
+  performedBy String?
+  furniture   Furniture @relation(fields: [furnitureId], references: [id])
+  service     Service   @relation(fields: [serviceId], references: [id])
+  performer   User?     @relation("MaintenancePerformer", fields: [performedBy], references: [id])
+}
+
+model RentToOwnAgreement {
+  id                   String       @id @default(uuid())
+  userId               String
+  furnitureId          String
+  rentalId             String       @unique // This is the foreign key to Rental.id
+  optionFee            Float
+  purchasePrice        Float
+  rentCreditPercentage Float
+  agreementStartDate   DateTime
+  agreementEndDate     DateTime
+  isExercised          Boolean      @default(false)
+  exercisedAt          DateTime?
+  status               RentalStatus @default(RENT_TO_OWN_PENDING)
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+  user                 User         @relation(fields: [userId], references: [id])
+  furniture            Furniture    @relation(fields: [furnitureId], references: [id])
+  // Corrected: The 'rental' field defines the relation from RentToOwnAgreement to Rental
+  rental               Rental       @relation(fields: [rentalId], references: [id])
+}
+
+model FurnitureSwap {
+  id                   String    @id @default(uuid())
+  initiatorId          String
+  requesterId          String
+  initiatorFurnitureId String
+  requesterFurnitureId String
+  status               String    @default("PENDING")
+  proposedDate         DateTime?
+  swapDate             DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  initiator            User      @relation("UserInitiatedSwaps", fields: [initiatorId], references: [id])
+  requester            User      @relation("UserReceivedSwaps", fields: [requesterId], references: [id])
+  initiatorFurniture   Furniture @relation("InitiatorFurnitureSwap", fields: [initiatorFurnitureId], references: [id])
+  requesterFurniture   Furniture @relation("RequesterFurnitureSwap", fields: [requesterFurnitureId], references: [id])
+
+  @@unique([initiatorId, initiatorFurnitureId, requesterId, requesterFurnitureId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  type      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }

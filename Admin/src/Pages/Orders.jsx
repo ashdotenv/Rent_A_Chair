@@ -43,71 +43,79 @@ const Orders = () => {
     }, [selectedOrder]);
 
     if (isLoading) {
-        return <div>Loading...</div>;
+        return <div className="flex items-center justify-center h-screen">
+            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+        </div>;
     }
 
     if (error) {
-        return <div>Error loading orders.</div>;
+        return <div className="flex items-center justify-center h-screen text-red-500">
+            Error loading orders.
+        </div>;
     }
 
     return (
-        <div className="p-6 bg-gray-100 min-h-screen">
-            <h1 className="text-2xl font-semibold text-center mb-6">Orders</h1>
+        <div className="p-4 md:p-6 bg-gray-100 min-h-screen">
+            <h1 className="text-2xl font-semibold text-center mb-4 md:mb-6 text-gray-800">Orders</h1>
 
-            <table className="min-w-full bg-white shadow-md rounded-lg">
-                <thead className="bg-blue-500 text-white">
-                    <tr>
-                        <th className="py-3 px-6 text-left">Order ID</th>
-                        <th className="py-3 px-6 text-left">User</th>
-                        <th className="py-3 px-6 text-left">Total Price</th>
-                        <th className="py-3 px-6 text-left">Status</th>
-                        <th className="py-3 px-6 text-left">Payment Status</th>
-                        <th className="py-3 px-6 text-left">Order Items</th>
-                        <th className="py-3 px-6 text-left">Ordered Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {data.orders.map((order) => (
-                        <tr
-                            key={order.orderId}
-                            className="border-b hover:bg-gray-50 cursor-pointer"
-                            onClick={() => {
-                                setSelectedOrder(order);
-                                setIsPopupOpen(true);
-                            }}
-                        >
-                            <td className="py-3 px-6">{order.orderId}</td>
-                            <td className="py-3 px-6">{order.user.fullName}</td>
-                            <td className="py-3 px-6">{`$${order.totalPrice}`}</td>
-                            <td className="py-3 px-6">{order.status}</td>
-                            <td className="py-3 px-6">{order.paymentStatus}</td>
-                            <td className="py-3 px-6">
-                                {order.orderItems.map((item) => (
-                                    <div key={item.orderItemId} className="mb-2">
-                                        <strong>{item.furniture.name}</strong> - {item.subTotal} USD
-                                    </div>
-                                ))}
-                            </td>
-                            <td className="py-3 px-6">{new Date(order.createdAt).toLocaleString()}</td>
+            <div className="overflow-x-auto">
+                <table className="min-w-full bg-white shadow-md rounded-lg">
+                    <thead className="bg-blue-500 text-white">
+                        <tr>
+                            <th className="py-2 md:py-3 px-4 md:px-6 text-left text-xs md:text-sm font-semibold">Order ID</th>
+                            <th className="py-2 md:py-3 px-4 md:px-6 text-left text-xs md:text-sm font-semibold">User</th>
+                            <th className="py-2 md:py-3 px-4 md:px-6 text-left text-xs md:text-sm font-semibold">Total Price</th>
+                            <th className="py-2 md:py-3 px-4 md:px-6 text-left text-xs md:text-sm font-semibold">Status</th>
+                            <th className="py-2 md:py-3 px-4 md:px-6 text-left text-xs md:text-sm font-semibold">Payment Status</th>
+                            <th className="py-2 md:py-3 px-4 md:px-6 text-left text-xs md:text-sm font-semibold">Order Items</th>
+                            <th className="py-2 md:py-3 px-4 md:px-6 text-left text-xs md:text-sm font-semibold">Ordered Date</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {data?.orders?.map((order) => (
+                            <tr
+                                key={order.orderId}
+                                className="border-b hover:bg-gray-50 cursor-pointer transition-colors duration-200"
+                                onClick={() => {
+                                    setSelectedOrder(order);
+                                    setIsPopupOpen(true);
+                                }}
+                            >
+                                <td className="py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm">{order.orderId}</td>
+                                <td className="py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm">{order.user.fullName}</td>
+                                <td className="py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm">{`$${order.totalPrice}`}</td>
+                                <td className="py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm">{order.status}</td>
+                                <td className="py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm">{order.paymentStatus}</td>
+                                <td className="py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm">
+                                    {order.orderItems.map((item) => (
+                                        <div key={item.orderItemId} className="mb-1 md:mb-2">
+                                            <strong className="font-medium text-xs md:text-sm">{item.furniture.name}</strong> - {item.subTotal} USD
+                                        </div>
+                                    ))}
+                                </td>
+                                <td className="py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm">
+                                    {new Date(order.createdAt).toLocaleString()}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
 
             {/* Popup for updating selected order */}
             {isPopupOpen && selectedOrder && (
                 <div
                     id="popup-overlay"
                     onClick={closePopup}
-                    className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+                    className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
                 >
-                    <div className="bg-white rounded-lg shadow-lg p-6 w-96" onClick={(e) => e.stopPropagation()}>
-                        <h2 className="text-xl font-semibold mb-4">Update Order: {selectedOrder.orderId}</h2>
+                    <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="text-xl font-semibold mb-3 md:mb-4 text-gray-800">Update Order: {selectedOrder.orderId}</h2>
 
-                        <div className="mb-4">
-                            <label className="block text-sm font-semibold">Status</label>
+                        <div className="mb-3 md:mb-4">
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Status</label>
                             <select
-                                className="w-full px-4 py-2 border rounded-lg"
+                                className="w-full px-4 py-2 border rounded-md"
                                 value={status}
                                 onChange={(e) => setStatus(e.target.value)}
                             >
@@ -119,10 +127,10 @@ const Orders = () => {
                             </select>
                         </div>
 
-                        <div className="mb-4">
-                            <label className="block text-sm font-semibold">Payment Status</label>
+                        <div className="mb-4 md:mb-6">
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Payment Status</label>
                             <select
-                                className="w-full px-4 py-2 border rounded-lg"
+                                className="w-full px-4 py-2 border rounded-md"
                                 value={paymentStatus}
                                 onChange={(e) => setPaymentStatus(e.target.value)}
                             >
@@ -133,16 +141,16 @@ const Orders = () => {
                             </select>
                         </div>
 
-                        <div className="flex justify-between">
+                        <div className="flex justify-end space-x-2">
                             <button
                                 onClick={handleUpdateOrder}
-                                className="px-6 py-2 bg-blue-600 text-white rounded-lg"
+                                className="bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200 px-4 py-2 rounded-md font-semibold text-sm"
                             >
                                 Update Order
                             </button>
                             <button
                                 onClick={() => setIsPopupOpen(false)}
-                                className="px-6 py-2 bg-red-600 text-white rounded-lg"
+                                className="bg-red-600 text-white hover:bg-red-700 transition-colors duration-200 px-4 py-2 rounded-md font-semibold text-sm"
                             >
                                 Close
                             </button>
