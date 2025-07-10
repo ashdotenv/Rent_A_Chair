@@ -1,0 +1,175 @@
+import { Request, Response, NextFunction } from "express";
+import axios from "axios";
+import { prisma } from "../utils/prismaClient";
+import { ErrorHandler } from "../utils/ErrorHandler";
+import { catchAsyncError } from "../middleware/catchAsyncError";
+import { KHALTI_GATEWAY_URL, KHALTI_SECRET_KEY } from "../config/env.config";
+// Initiate Khalti Payment and Rental
+export const initiatePayment = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) {
+        return next(new ErrorHandler("Unauthorized", 401));
+      }
+      const {
+        furnitureId,
+        rentalType,
+        startDate,
+        endDate,
+        deliveryAddress,
+        purchase_order_name,
+        return_url,
+        customer_info
+      } = req.body;
+
+      const furniture = await prisma.furniture.findUnique({ where: { id: furnitureId } });
+      if (!furniture) return next(new ErrorHandler("Furniture not found", 404));
+      if (furniture.availableQuantity < 1) return next(new ErrorHandler("Furniture is currently out of stock", 400));
+      let rentalRate = 0;
+      if (rentalType === "DAILY") rentalRate = furniture.dailyRate;
+      else if (rentalType === "WEEKLY") rentalRate = furniture.weeklyRate;
+      else rentalRate = furniture.monthlyRate;
+
+      // Create rental (PENDING)
+      const rental = await prisma.rental.create({
+        data: {
+          userId: req.user.id,
+          furnitureId,
+          rentalType,
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+          totalAmount: rentalRate,
+          paymentMethod: "KHALTI",
+          paymentStatus: "PENDING",
+          status: "PENDING",
+          deliveryStreet: deliveryAddress.street,
+          deliveryCity: deliveryAddress.city,
+          deliveryState: deliveryAddress.state,
+          deliveryPostalCode: deliveryAddress.postalCode,
+          deliveryCountry: deliveryAddress.country,
+          discountCode: req.body.discountCode || null,
+        }
+      });
+
+      // Create payment (PENDING)
+      const payment = await prisma.payment.create({
+        data: {
+          rentalId: rental.id,
+          paymentMethod: "KHALTI",
+          status: "PENDING",
+          amount: rentalRate
+        }
+      });
+
+      // Initiate Khalti payment
+      const response = await axios.post(
+        `${KHALTI_GATEWAY_URL}/api/v2/epayment/initiate/`,
+        {
+          return_url,
+          website_url: req.headers.origin || "http://localhost:3000",
+          amount: Math.round(rentalRate * 100), // Khalti expects amount in paisa
+          purchase_order_id: payment.id,
+          purchase_order_name: purchase_order_name || furniture.title,
+          customer_info,
+        },
+        {
+          headers: {
+            Authorization: `Key ${KHALTI_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      res.json({
+        success: true,
+        rentalId: rental.id,
+        paymentId: payment.id,
+        khalti: response.data
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error?.response?.data?.detail || error.message, 400));
+    }
+  })
+
+// Verify Khalti Payment (after user completes payment)
+export const verifyPayment = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { pidx, token, amount, paymentId } = req.body;
+    let response;
+    if (pidx) {
+      response = await axios.post(
+        `${KHALTI_GATEWAY_URL}/api/v2/epayment/lookup/`,
+        { pidx },
+        {
+          headers: {
+            Authorization: `Key ${KHALTI_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (response.data.status !== "Completed") {
+        return next(new ErrorHandler("Payment not completed", 400));
+      }
+    } else if (token && amount) {
+      const amountNumber = typeof amount === "string" ? parseInt(amount, 10) : amount;
+      response = await axios.post(
+        `${KHALTI_GATEWAY_URL}/api/v2/payment/verify/`,
+        { token, amount: amountNumber },
+        {
+          headers: {
+            Authorization: `Key ${KHALTI_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (response.data.state?.name !== "Completed") {
+        return next(new ErrorHandler("Payment not completed", 400));
+      }
+    } else {
+      return next(new ErrorHandler("Invalid verification payload", 400));
+    }
+
+    // Check if payment is already verified
+    const existingPayment = await prisma.payment.findUnique({
+      where: { id: paymentId },
+      include: { rental: true },
+    });
+    if (existingPayment?.status === "SUCCESS") {
+      // Already verified, return rental details
+      return res.json({ success: true, alreadyVerified: true, rental: existingPayment.rental });
+    }
+
+    // Save KhaltiPayment and update Payment & Rental
+    const payment = await prisma.payment.update({
+      where: { id: paymentId },
+      data: {
+        status: "SUCCESS",
+        transactionId: response.data.transaction_id || response.data.idx,
+        paidAt: new Date(),
+        gatewayMeta: response.data,
+        khaltiPayment: {
+          upsert: {
+            create: {
+              transactionId: response.data.transaction_id || response.data.idx,
+              token: pidx || token,
+              rawResponse: response.data,
+            },
+            update: {
+              transactionId: response.data.transaction_id || response.data.idx,
+              token: pidx || token,
+              rawResponse: response.data,
+            }
+          }
+        },
+      },
+      include: { khaltiPayment: true, rental: true },
+    });
+    await prisma.rental.update({
+      where: { id: payment.rentalId },
+      data: { paymentStatus: "SUCCESS", status: "ACTIVE" },
+    });
+    res.json({ success: true, payment });
+  } catch (error: any) {
+    console.log(error.response?.data);
+    return next(new ErrorHandler(error?.response?.data?.detail || error.message, 400));
+  }
+}); 

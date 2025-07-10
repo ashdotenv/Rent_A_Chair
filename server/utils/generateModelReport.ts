@@ -12,7 +12,7 @@ type ReportFilters = {
 export async function generateModelReport<T extends ModelName>(
     modelName: T,
     filters: ReportFilters = {},
-    sumField?: string 
+    sumField?: string
 ) {
     const model = prisma[modelName] as any
     if (!model) throw new Error(`Model "${modelName as string}" not found in Prisma client`)

@@ -18,6 +18,24 @@ enum FurnitureCategory {
   TABLE
   CHAIR
   WARDROBE
+  DESK
+  BOOKSHELF
+  DRESSER
+  NIGHTSTAND
+  CABINET
+  OTTOMAN
+  RECLINER
+  BENCH
+  HUTCH
+  TV_STAND
+  DINING_SET
+  ENTRYWAY
+  STORAGE
+  KITCHEN_ISLAND
+  VANITY
+  SECTIONAL
+  LOVESEAT
+  FILING_CABINET
   OTHER
 }
 
@@ -208,6 +226,7 @@ model Payment {
   invoiceUrl          String?
   nextPaymentDue      DateTime?
   subscriptionPayment SubscriptionPayment?
+  khaltiPayment       KhaltiPayment?
 }
 
 model DamageReport {
@@ -459,4 +478,14 @@ model Notification {
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
+}
+
+model KhaltiPayment {
+  id            String   @id @default(uuid())
+  paymentId     String   @unique
+  transactionId String
+  token         String
+  rawResponse   Json
+  createdAt     DateTime @default(now())
+  payment       Payment  @relation(fields: [paymentId], references: [id])
 }

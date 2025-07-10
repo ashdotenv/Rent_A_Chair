@@ -12,5 +12,7 @@ export const {
     SMTP_PASS,
     FROM_EMAIL,
     NODE_ENV,
-    PASSWORD_RESET_SECRET
+    PASSWORD_RESET_SECRET,
+    KHALTI_SECRET_KEY,
+    KHALTI_GATEWAY_URL
 } = process.env

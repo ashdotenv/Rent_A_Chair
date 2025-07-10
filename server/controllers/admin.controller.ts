@@ -6,6 +6,7 @@ import { prisma } from "../utils/prismaClient"
 export const createFurniture = catchAsyncError(
     async (req: Request, res: Response, next: NextFunction) => {
         try {
+
             const {
                 title,
                 description,
@@ -77,6 +78,8 @@ export const createFurniture = catchAsyncError(
                 }
             }
 
+
+
             const furniture = await prisma.furniture.create({
                 data: {
                     title,
@@ -94,7 +97,7 @@ export const createFurniture = catchAsyncError(
                     purchaseDate: new Date(purchaseDate),
                     conditionScore: Number(conditionScore),
                     wearLevel: Number(wearLevel),
-                    tags: tags ? tags.toString() : "",
+                    tags: typeof tags === 'string' ? tags : Array.isArray(tags) ? tags.join(',') : '',
                     isFeatured: Boolean(isFeatured),
                     isArchived: Boolean(isArchived),
                     images: {
@@ -269,10 +272,16 @@ export const deleteFurniture = catchAsyncError(
 )
 export const updateUserRole = catchAsyncError(
     async (req: Request, res: Response, next: NextFunction) => {
-        const { userId, newRole } = req.body
+        // Accept both { id, role } and { userId, newRole } for compatibility
+        const userId = req.body.id || req.body.userId;
+        const newRole = req.body.role || req.body.newRole;
 
         if (!req.user) {
             return next(new ErrorHandler("Unauthorized", 401))
+        }
+
+        if (!userId || !newRole) {
+            return next(new ErrorHandler("User ID and new role are required", 400))
         }
 
         if (req.user.id === userId) {
@@ -307,11 +316,10 @@ export const updateUserRole = catchAsyncError(
 
 export const getAllUsers = catchAsyncError(
     async (req: Request, res: Response, next: NextFunction) => {
-        if (!req.user || req.user.role !== "ADMIN") {
-            return next(new ErrorHandler("Forbidden", 403))
-        }
+
         const users = await prisma.user.findMany({
             select: { id: true, email: true, role: true, createdAt: true, fullName: true },
+            where: { id: { not: req.user.id } },
             orderBy: { createdAt: "desc" },
         })
         res.status(200).json({ success: true, users })
@@ -358,3 +366,23 @@ export const updateRentalStatus = catchAsyncError(async (req: Request, res: Resp
         return next(new ErrorHandler(error.message, 500));
     }
 });
+
+export const getAllRentals = catchAsyncError(
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const rentals = await prisma.rental.findMany({
+                include: {
+                    user: true,
+                    furniture: true,
+                },
+                orderBy: { createdAt: "desc" },
+            });
+            res.status(200).json({
+                success: true,
+                rentals,
+            });
+        } catch (error) {
+            return next(error);
+        }
+    }
+);

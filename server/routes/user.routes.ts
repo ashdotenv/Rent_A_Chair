@@ -6,7 +6,7 @@ const router = Router()
 router.get("/me", myProfile)
 router.get("/loyalty-points", getLoyaltyPoints)
 router.get("/referral-history", getReferralHistory)
-router.put("/updateProfile", updateProfile)
+router.put("/update-Profile", updateProfile)
 router.post("/reset-password", resetPassword)
 router.put("/change-password", changePassword)
 export default router

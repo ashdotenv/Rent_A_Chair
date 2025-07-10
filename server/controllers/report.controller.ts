@@ -8,7 +8,7 @@ export const getUsersReport = catchAsyncError(
             const report = await generateModelReport("user")
             res.status(200).json({ success: true, report })
         } catch (error) {
-           return next(error)
+            return next(error)
         }
     }
 )
@@ -19,7 +19,7 @@ export const getFurnitureReport = catchAsyncError(
             const report = await generateModelReport("furniture")
             res.status(200).json({ success: true, report })
         } catch (error) {
-           return next(error)
+            return next(error)
         }
     }
 )
@@ -33,7 +33,7 @@ export const getRentalsReport = catchAsyncError(
             const report = await generateModelReport("rental", filters, "totalAmount")
             res.status(200).json({ success: true, report })
         } catch (error) {
-           return next(error)
+            return next(error)
         }
     }
 )

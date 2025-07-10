@@ -8,5 +8,5 @@ export async function checkDBConnection() {
     } catch (error) {
         console.error('Database connection check failed:', error);
         return false;
-    } 
+    }
 }
