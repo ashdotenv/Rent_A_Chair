@@ -32,7 +32,6 @@ export const placeRental = catchAsyncError(
             }
 
             if (!validRentalStatuses.includes(rentalStatus)) {
-                console.log(rentalStatus);
 
                 return next(new ErrorHandler("Invalid rental status", 400))
             }

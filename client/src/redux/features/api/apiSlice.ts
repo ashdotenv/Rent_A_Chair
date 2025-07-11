@@ -48,7 +48,7 @@ export const apiSlice = createApi({
     'Auth',
     'User',
     'Users',
-    'Furniture',
+    'Furnitures',
     'Rentals',
     'UserAnalytics',
     'RentalAnalytics',

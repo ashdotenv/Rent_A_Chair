@@ -3,7 +3,6 @@ import { catchAsyncError } from "../middleware/catchAsyncError"
 import { prisma } from "../utils/prismaClient"
 import { ErrorHandler } from "../utils/ErrorHandler"
 import { FurnitureCategory } from "@prisma/client"
-import { Prisma } from "@prisma/client";
 export const getAllFurniture = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -73,6 +72,28 @@ export const getTopFeaturedProducts = catchAsyncError(
         images: images.filter(img => img.furnitureId === f.id)
       }));
       res.status(200).json({ success: true, count: furnitureWithImages.length, furniture: furnitureWithImages });
+    } catch (error) {
+      return next(error);
+    }
+  }
+);
+
+export const getFurnitureById = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const furniture = await prisma.furniture.findUnique({
+        where: { id },
+        include: {
+          images: true,
+          ratings: true
+        }
+      });
+      
+      if (!furniture) {
+        return next(new ErrorHandler("Furniture not found", 404));
+      }
+      res.status(200).json({ success: true, furniture });
     } catch (error) {
       return next(error);
     }

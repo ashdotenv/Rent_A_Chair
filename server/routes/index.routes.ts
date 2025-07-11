@@ -5,9 +5,10 @@ import userRoutes from "./user.routes"
 import rentalRoutes from "./rental.routes"
 import khaltiRoutes from "./khalti.routes"
 import { authorizeRoles, isAuthenticated } from "../middleware/auth";
-import { getAllFurniture, getTopFeaturedProducts } from "../controllers/public.controller";
+import { getAllFurniture, getFurnitureById, getTopFeaturedProducts } from "../controllers/public.controller";
 const router = Router()
 router.get("/furnitures", getAllFurniture)
+router.get("/furniture/:id", getFurnitureById)
 router.get("/furnitures/:category", getAllFurniture)
 router.get("/featuredProducts", getTopFeaturedProducts)
 router.use("/auth", authRoutes)

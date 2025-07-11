@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { apiSlice } from './features/api/apiSlice'
 import authReducer from './features/auth/authSlice'
+import cartReducer from './features/cart/cartSlice'
 
 // Configure the store
 export const store = configureStore({
@@ -8,6 +9,7 @@ export const store = configureStore({
     // Add the generated reducer as a specific top-level slice
     [apiSlice.reducerPath]: apiSlice.reducer,
     auth: authReducer,
+    cart: cartReducer,
   },
   // Adding the api middleware enables caching, invalidation, polling,
   // and other useful features of RTK Query.

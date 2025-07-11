@@ -4,19 +4,24 @@ export const publicApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAllFurniture: builder.query({
       query: () => "/furnitures",
+      providesTags: ["Furnitures"]
+
     }),
     getFurnitureByCategory: builder.query({
       query: (category: string) => `/furnitures/${category}`,
     }),
     getFeaturedProducts: builder.query({
-      query: (category: string) => `/featuredProducts`,
+      query: () => `/featuredProducts`,
     }),
-    // Add more public endpoints as needed
+    getFurnitureById: builder.query({
+      query: (id: string) => `/furniture/${id}`,
+    }),
   }),
 });
 
 export const {
   useGetAllFurnitureQuery,
   useGetFurnitureByCategoryQuery,
-  useGetFeaturedProductsQuery
+  useGetFeaturedProductsQuery,
+  useGetFurnitureByIdQuery
 } = publicApi;

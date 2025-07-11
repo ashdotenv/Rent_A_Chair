@@ -11,7 +11,6 @@ export default function AdminUsersPage() {
 
   if (isLoading) return <div className='flex h-screen items-center justify-center' ><Loader />;</div>
   if (isError) return <div>Failed to load users.</div>;
-  console.log(data)
 
   const handleRoleChange = (userId: string, newRole: string) => {
     setRoleUpdates((prev) => ({ ...prev, [userId]: newRole }));

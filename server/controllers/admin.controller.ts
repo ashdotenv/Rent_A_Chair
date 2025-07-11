@@ -327,10 +327,11 @@ export const getAllUsers = catchAsyncError(
 )
 const validRentalStatuses = ["PENDING", "ACTIVE", "COMPLETED", "CANCELLED"];
 const validPaymentStatuses = ["PENDING", "FAILED", "SUCCESS"];
+const validDeliveryStatuses = ["PENDING", "SHIPPED", "DELIVERED", "CANCELLED"];
 
 export const updateRentalStatus = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { updatedStatus, updatedPaymentStatus } = req.body;
+        const { status, paymentStatus, deliveryStatus } = req.body;
         const { id } = req.params;
 
         const rentalExist = await prisma.rental.findFirst({ where: { id } });
@@ -338,19 +339,24 @@ export const updateRentalStatus = catchAsyncError(async (req: Request, res: Resp
             return next(new ErrorHandler("No rental found", 400));
         }
 
-        if (updatedStatus && !validRentalStatuses.includes(updatedStatus)) {
+        if (status && !validRentalStatuses.includes(status)) {
             return next(new ErrorHandler("Enter a valid rental status", 400));
         }
 
-        if (updatedPaymentStatus && !validPaymentStatuses.includes(updatedPaymentStatus)) {
+        if (paymentStatus && !validPaymentStatuses.includes(paymentStatus)) {
             return next(new ErrorHandler("Enter a valid payment status", 400));
+        }
+
+        if (deliveryStatus && !validDeliveryStatuses.includes(deliveryStatus)) {
+            return next(new ErrorHandler("Enter a valid delivery status", 400));
         }
 
         const rental = await prisma.rental.update({
             where: { id },
             data: {
-                status: updatedStatus || rentalExist.status,
-                paymentStatus: updatedPaymentStatus || rentalExist.paymentStatus
+                status: status || rentalExist.status,
+                paymentStatus: paymentStatus || rentalExist.paymentStatus,
+                deliveryStatus: deliveryStatus || rentalExist.deliveryStatus
             }
         });
 
@@ -358,8 +364,9 @@ export const updateRentalStatus = catchAsyncError(async (req: Request, res: Resp
             success: true,
             rental: {
                 id: rental.id,
-                updatedStatus: rental.status,
-                updatedPaymentStatus: rental.paymentStatus
+                status: rental.status,
+                paymentStatus: rental.paymentStatus,
+                deliveryStatus: rental.deliveryStatus
             }
         });
     } catch (error: any) {

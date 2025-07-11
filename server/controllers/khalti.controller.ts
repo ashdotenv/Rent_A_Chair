@@ -3,7 +3,7 @@ import axios from "axios";
 import { prisma } from "../utils/prismaClient";
 import { ErrorHandler } from "../utils/ErrorHandler";
 import { catchAsyncError } from "../middleware/catchAsyncError";
-import { KHALTI_GATEWAY_URL, KHALTI_SECRET_KEY } from "../config/env.config";
+import { CLIENT_URL, KHALTI_GATEWAY_URL, KHALTI_SECRET_KEY } from "../config/env.config";
 // Initiate Khalti Payment and Rental
 export const initiatePayment = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -18,17 +18,22 @@ export const initiatePayment = catchAsyncError(
         endDate,
         deliveryAddress,
         purchase_order_name,
-        return_url,
-        customer_info
+        customer_info,
+        quantity
       } = req.body;
 
       const furniture = await prisma.furniture.findUnique({ where: { id: furnitureId } });
       if (!furniture) return next(new ErrorHandler("Furniture not found", 404));
       if (furniture.availableQuantity < 1) return next(new ErrorHandler("Furniture is currently out of stock", 400));
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
       let rentalRate = 0;
       if (rentalType === "DAILY") rentalRate = furniture.dailyRate;
       else if (rentalType === "WEEKLY") rentalRate = furniture.weeklyRate;
       else rentalRate = furniture.monthlyRate;
+      const qty = quantity ? Number(quantity) : 1;
+      const totalAmount = rentalRate * totalDays * qty;
 
       // Create rental (PENDING)
       const rental = await prisma.rental.create({
@@ -38,7 +43,7 @@ export const initiatePayment = catchAsyncError(
           rentalType,
           startDate: new Date(startDate),
           endDate: new Date(endDate),
-          totalAmount: rentalRate,
+          totalAmount: totalAmount,
           paymentMethod: "KHALTI",
           paymentStatus: "PENDING",
           status: "PENDING",
@@ -57,7 +62,7 @@ export const initiatePayment = catchAsyncError(
           rentalId: rental.id,
           paymentMethod: "KHALTI",
           status: "PENDING",
-          amount: rentalRate
+          amount: totalAmount
         }
       });
 
@@ -65,9 +70,9 @@ export const initiatePayment = catchAsyncError(
       const response = await axios.post(
         `${KHALTI_GATEWAY_URL}/api/v2/epayment/initiate/`,
         {
-          return_url,
-          website_url: req.headers.origin || "http://localhost:3000",
-          amount: Math.round(rentalRate * 100), // Khalti expects amount in paisa
+          return_url: CLIENT_URL+"/payment/verify",
+          website_url: CLIENT_URL,
+          amount: Math.round(totalAmount * 100), // Khalti expects paisa
           purchase_order_id: payment.id,
           purchase_order_name: purchase_order_name || furniture.title,
           customer_info,
@@ -93,7 +98,8 @@ export const initiatePayment = catchAsyncError(
 // Verify Khalti Payment (after user completes payment)
 export const verifyPayment = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { pidx, token, amount, paymentId } = req.body;
+  
+    const { pidx, token, amount, paymentId } = req.query;
     let response;
     if (pidx) {
       response = await axios.post(
@@ -110,7 +116,7 @@ export const verifyPayment = catchAsyncError(async (req: Request, res: Response,
         return next(new ErrorHandler("Payment not completed", 400));
       }
     } else if (token && amount) {
-      const amountNumber = typeof amount === "string" ? parseInt(amount, 10) : amount;
+      const amountNumber = typeof amount === "string" ? parseInt(amount as string, 10) : amount;
       response = await axios.post(
         `${KHALTI_GATEWAY_URL}/api/v2/payment/verify/`,
         { token, amount: amountNumber },
@@ -130,7 +136,7 @@ export const verifyPayment = catchAsyncError(async (req: Request, res: Response,
 
     // Check if payment is already verified
     const existingPayment = await prisma.payment.findUnique({
-      where: { id: paymentId },
+      where: { id: paymentId as string },
       include: { rental: true },
     });
     if (existingPayment?.status === "SUCCESS") {
@@ -140,7 +146,7 @@ export const verifyPayment = catchAsyncError(async (req: Request, res: Response,
 
     // Save KhaltiPayment and update Payment & Rental
     const payment = await prisma.payment.update({
-      where: { id: paymentId },
+      where: { id: paymentId as string },
       data: {
         status: "SUCCESS",
         transactionId: response.data.transaction_id || response.data.idx,
@@ -150,12 +156,12 @@ export const verifyPayment = catchAsyncError(async (req: Request, res: Response,
           upsert: {
             create: {
               transactionId: response.data.transaction_id || response.data.idx,
-              token: pidx || token,
+              token: (pidx || token) as string,
               rawResponse: response.data,
             },
             update: {
               transactionId: response.data.transaction_id || response.data.idx,
-              token: pidx || token,
+              token: (pidx || token) as string,
               rawResponse: response.data,
             }
           }
@@ -169,7 +175,6 @@ export const verifyPayment = catchAsyncError(async (req: Request, res: Response,
     });
     res.json({ success: true, payment });
   } catch (error: any) {
-    console.log(error.response?.data);
     return next(new ErrorHandler(error?.response?.data?.detail || error.message, 400));
   }
 }); 

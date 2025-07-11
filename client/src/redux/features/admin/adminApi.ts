@@ -38,10 +38,10 @@ export const adminApi = apiSlice.injectEndpoints({
       invalidatesTags: ["Users"]
     }),
     updateRentalStatus: builder.mutation({
-      query: ({ id, status }) => ({
+      query: ({ id, status, paymentStatus, deliveryStatus }) => ({
         url: `/admin/update-rental-status/${id}`,
         method: "PUT",
-        body: { status }
+        body: { status, paymentStatus, deliveryStatus }
       }),
       invalidatesTags: ["Rentals"]
     }),

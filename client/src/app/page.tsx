@@ -52,11 +52,13 @@ export default function HomePage() {
               >
                 <div className="w-24 h-24 mb-2 flex items-center justify-center overflow-hidden rounded-lg bg-[#f5faff] border border-[#e3eaf6]">
                   {item.images && item.images.length > 0 ? (
-                    <img
-                      src={item.images[0].url}
-                      alt={item.title}
-                      className="object-contain w-full h-full group-hover:scale-105 transition-transform duration-300"
-                    />
+                    <Link href={`/furniture/${item.id}`}>
+                      <img
+                        src={item.images[0].url}
+                        alt={item.title}
+                        className="object-contain w-full h-full group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </Link>
                   ) : (
                     <span className="text-gray-300 text-3xl">?</span>
                   )}

@@ -14,5 +14,6 @@ export const {
     NODE_ENV,
     PASSWORD_RESET_SECRET,
     KHALTI_SECRET_KEY,
-    KHALTI_GATEWAY_URL
+    KHALTI_GATEWAY_URL,
+    CLIENT_URL
 } = process.env
