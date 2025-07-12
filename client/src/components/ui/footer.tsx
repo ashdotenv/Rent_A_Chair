@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="text-center md:text-left">
           <h3 className="text-2xl font-bold mb-2">Rent A Chair</h3>
           <p className="text-sm text-blue-100 max-w-xs">
-            Making your events comfortable and stylish. Rent premium chairs and furniture for any occasion.
+            Making your life comfortable and stylish. Rent premium furniture for any usage.
           </p>
         </div>
         <div className="flex flex-col md:flex-row gap-4 md:gap-8 items-center">

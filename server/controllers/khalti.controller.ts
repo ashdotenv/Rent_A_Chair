@@ -57,8 +57,8 @@ export const initiatePayment = catchAsyncError(
             deliveryState: deliveryAddress.state,
             deliveryPostalCode: deliveryAddress.postalCode,
             deliveryCountry: deliveryAddress.country,
-            discountCode: discountCode || null
-            // quantity // removed, not in schema
+            discountCode: discountCode || null,
+            quantity
           }
         });
         createdRentals.push(rental);

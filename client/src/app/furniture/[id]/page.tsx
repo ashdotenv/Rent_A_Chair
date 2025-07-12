@@ -94,7 +94,7 @@ export default function FurnitureDetailPage() {
         <div className="flex items-center gap-3 mb-2">
 
 
-          <span className="text-2xl font-bold text-gray-900"> ₹ {furniture.dailyRate}per day</span>
+          <span className="text-2xl font-bold text-gray-900"> रु {furniture.dailyRate}per day</span>
           {discount > 0 && (
             <span className="bg-green-100 text-green-700 text-xs font-semibold px-2 py-1 rounded">{discount}% off</span>
           )}
@@ -134,7 +134,7 @@ export default function FurnitureDetailPage() {
                       <img src={item.image} alt={item.title} className="w-16 h-16 object-cover rounded" />
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900">{item.title}</div>
-                        <div className="text-gray-600 text-sm">₹ {item.dailyRate} per day</div>
+                        <div className="text-gray-600 text-sm">रु {item.dailyRate} per day</div>
                         <div className="flex items-center gap-2 mt-2">
                           <button
                             className="w-7 h-7 rounded border border-gray-300 flex items-center justify-center text-lg"
@@ -158,7 +158,7 @@ export default function FurnitureDetailPage() {
               <div className="mt-4 border-t pt-4">
                 <div className="flex justify-between font-semibold text-lg">
                   <span>Total</span>
-                  <span>₹ {cartTotal}</span>
+                  <span>रु {cartTotal}</span>
                 </div>
                 <button className="w-full mt-4 bg-[#1980E5] hover:bg-[#1565C0] text-white font-semibold py-2 rounded transition" >
                   <Link href={"/checkout"} >Checkout</Link>
@@ -180,8 +180,8 @@ export default function FurnitureDetailPage() {
             <li>Pattern Type: Plain</li>
             <li>Details: {furniture.dimensions}</li>
             <li>Available Quantity: {furniture.availableQuantity}</li>
-            <li>Weekly Rate: ₹ {furniture.weeklyRate}</li>
-            <li>Monthly Rate: ₹ {furniture.monthlyRate}</li>
+            <li>Weekly Rate: रु {furniture.weeklyRate}</li>
+            <li>Monthly Rate: रु {furniture.monthlyRate}</li>
             <li>Description: {furniture.description}</li>
           </ul>
         </div>

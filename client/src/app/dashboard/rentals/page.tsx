@@ -95,7 +95,7 @@ export default function RentalsPage() {
                             {rental.payment?.status || "PENDING"}
                           </Badge>
                         </TableCell>
-                        <TableCell className="font-bold text-[#1980E5]">₹{rental.totalAmount}</TableCell>
+                        <TableCell className="font-bold text-[#1980E5]">रु{rental.totalAmount}</TableCell>
                         <TableCell className="text-xs text-gray-500">
                           {rental.deliveryCity}, {rental.deliveryCountry}
                         </TableCell>

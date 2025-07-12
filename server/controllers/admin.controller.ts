@@ -393,3 +393,321 @@ export const getAllRentals = catchAsyncError(
         }
     }
 );
+
+// Bundle Controllers
+export const createBundle = catchAsyncError(
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const {
+                name,
+                description,
+                price,
+                isFeatured,
+                bundleItems
+            } = req.body;
+
+            if (!req.user) {
+                return next(new ErrorHandler("Unauthorized", 401));
+            }
+
+            if (!name || !price || !bundleItems || !Array.isArray(bundleItems) || bundleItems.length === 0) {
+                return next(new ErrorHandler("Please provide bundle name, price, and at least one bundle item", 400));
+            }
+
+            // Validate bundle items
+            for (const item of bundleItems) {
+                if (!item.furnitureId || !item.quantity || item.quantity <= 0) {
+                    return next(new ErrorHandler("Each bundle item must have furnitureId and valid quantity", 400));
+                }
+
+                // Check if furniture exists
+                const furniture = await prisma.furniture.findUnique({
+                    where: { id: item.furnitureId }
+                });
+
+                if (!furniture) {
+                    return next(new ErrorHandler(`Furniture with ID ${item.furnitureId} not found`, 404));
+                }
+
+                // Check if furniture has enough quantity
+                if (furniture.availableQuantity < item.quantity) {
+                    return next(new ErrorHandler(`Not enough quantity available for ${furniture.title}`, 400));
+                }
+            }
+
+            // Handle image upload if provided
+            let imageUrl = null;
+            if (req.files && req.files.image) {
+                const image = Array.isArray(req.files.image) ? req.files.image[0] : req.files.image;
+                const result = await cloudinary.uploader.upload(image.tempFilePath, {
+                    folder: "bundles"
+                });
+                imageUrl = result.secure_url;
+            }
+
+            // Create bundle with items
+            const bundle = await prisma.furnitureBundle.create({
+                data: {
+                    name,
+                    description: description || null,
+                    price: Number(price),
+                    imageUrl,
+                    isFeatured: Boolean(isFeatured),
+                    bundleItems: {
+                        create: bundleItems.map((item: any) => ({
+                            furnitureId: item.furnitureId,
+                            quantity: Number(item.quantity)
+                        }))
+                    }
+                },
+                include: {
+                    bundleItems: {
+                        include: {
+                            furniture: {
+                                include: {
+                                    images: true
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            res.status(201).json({
+                success: true,
+                message: "Bundle created successfully",
+                bundle
+            });
+        } catch (error) {
+            return next(error);
+        }
+    }
+);
+
+export const getAllBundles = catchAsyncError(
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const bundles = await prisma.furnitureBundle.findMany({
+                include: {
+                    bundleItems: {
+                        include: {
+                            furniture: {
+                                include: {
+                                    images: true
+                                }
+                            }
+                        }
+                    }
+                },
+                orderBy: { createdAt: "desc" }
+            });
+
+            res.status(200).json({
+                success: true,
+                bundles
+            });
+        } catch (error) {
+            return next(error);
+        }
+    }
+);
+
+export const getBundleById = catchAsyncError(
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { id } = req.params;
+
+            const bundle = await prisma.furnitureBundle.findUnique({
+                where: { id },
+                include: {
+                    bundleItems: {
+                        include: {
+                            furniture: {
+                                include: {
+                                    images: true
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (!bundle) {
+                return next(new ErrorHandler("Bundle not found", 404));
+            }
+
+            res.status(200).json({
+                success: true,
+                bundle
+            });
+        } catch (error) {
+            return next(error);
+        }
+    }
+);
+
+export const updateBundle = catchAsyncError(
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { id } = req.params;
+            const {
+                name,
+                description,
+                price,
+                isFeatured,
+                bundleItems
+            } = req.body;
+
+            if (!req.user) {
+                return next(new ErrorHandler("Unauthorized", 401));
+            }
+
+            const existingBundle = await prisma.furnitureBundle.findUnique({
+                where: { id },
+                include: {
+                    bundleItems: true
+                }
+            });
+
+            if (!existingBundle) {
+                return next(new ErrorHandler("Bundle not found", 404));
+            }
+
+            // Handle image upload if provided
+            let imageUrl = existingBundle.imageUrl;
+            if (req.files && req.files.image) {
+                // Delete old image if exists
+                if (existingBundle.imageUrl) {
+                    const segments = existingBundle.imageUrl.split("/");
+                    const publicIdWithExt = segments[segments.length - 1];
+                    const publicId = publicIdWithExt.split(".")[0];
+                    await cloudinary.uploader.destroy(publicId);
+                }
+
+                const image = Array.isArray(req.files.image) ? req.files.image[0] : req.files.image;
+                const result = await cloudinary.uploader.upload(image.tempFilePath, {
+                    folder: "bundles"
+                });
+                imageUrl = result.secure_url;
+            }
+
+            // Update bundle
+            const updatedBundle = await prisma.furnitureBundle.update({
+                where: { id },
+                data: {
+                    name: name || existingBundle.name,
+                    description: description !== undefined ? description : existingBundle.description,
+                    price: price ? Number(price) : existingBundle.price,
+                    imageUrl,
+                    isFeatured: isFeatured !== undefined ? Boolean(isFeatured) : existingBundle.isFeatured
+                },
+                include: {
+                    bundleItems: {
+                        include: {
+                            furniture: {
+                                include: {
+                                    images: true
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update bundle items if provided
+            if (bundleItems && Array.isArray(bundleItems)) {
+                // Delete existing bundle items
+                await prisma.bundleItem.deleteMany({
+                    where: { bundleId: id }
+                });
+
+                // Create new bundle items
+                await prisma.bundleItem.createMany({
+                    data: bundleItems.map((item: any) => ({
+                        bundleId: id,
+                        furnitureId: item.furnitureId,
+                        quantity: Number(item.quantity)
+                    }))
+                });
+
+                // Fetch updated bundle with new items
+                const finalBundle = await prisma.furnitureBundle.findUnique({
+                    where: { id },
+                    include: {
+                        bundleItems: {
+                            include: {
+                                furniture: {
+                                    include: {
+                                        images: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                res.status(200).json({
+                    success: true,
+                    message: "Bundle updated successfully",
+                    bundle: finalBundle
+                });
+            } else {
+                res.status(200).json({
+                    success: true,
+                    message: "Bundle updated successfully",
+                    bundle: updatedBundle
+                });
+            }
+        } catch (error) {
+            return next(error);
+        }
+    }
+);
+
+export const deleteBundle = catchAsyncError(
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { id } = req.params;
+
+            if (!req.user) {
+                return next(new ErrorHandler("Unauthorized", 401));
+            }
+
+            const bundle = await prisma.furnitureBundle.findUnique({
+                where: { id },
+                include: {
+                    bundleItems: true
+                }
+            });
+
+            if (!bundle) {
+                return next(new ErrorHandler("Bundle not found", 404));
+            }
+
+            // Delete bundle image from cloudinary if exists
+            if (bundle.imageUrl) {
+                const segments = bundle.imageUrl.split("/");
+                const publicIdWithExt = segments[segments.length - 1];
+                const publicId = publicIdWithExt.split(".")[0];
+                await cloudinary.uploader.destroy(publicId);
+            }
+
+            // Delete bundle items first (cascade)
+            await prisma.bundleItem.deleteMany({
+                where: { bundleId: id }
+            });
+
+            // Delete the bundle
+            await prisma.furnitureBundle.delete({
+                where: { id }
+            });
+
+            res.status(200).json({
+                success: true,
+                message: "Bundle deleted successfully"
+            });
+        } catch (error) {
+            return next(error);
+        }
+    }
+);

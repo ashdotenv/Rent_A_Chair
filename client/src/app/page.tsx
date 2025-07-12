@@ -1,9 +1,10 @@
 "use client"
 import Link from "next/link";
 import { useGetFeaturedProductsQuery } from "../redux/features/public/publicApi";
-
+import Image from "next/image";
+import Logo from "../../public/Logo.png"
 export default function HomePage() {
-  const { data, isLoading, isError } = useGetFeaturedProductsQuery();
+  const { data, isLoading, isError } = useGetFeaturedProductsQuery(1);
   const featured = data?.furniture || [];
 
   return (
@@ -18,8 +19,9 @@ export default function HomePage() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex-1 w-full">
         <div className="text-center mb-12">
           <h1 className="text-5xl font-extrabold text-[#1565C0] mb-4 drop-shadow-lg">Rent A Chair</h1>
+
           <p className="text-xl text-gray-700 mb-8 max-w-2xl mx-auto">
-            Find the perfect chair for your event. We offer a wide selection of comfortable and stylish chairs for rent.
+            Find the perfect chair for your event. We offer a wide selection of comfortable and stylish Furnitures for rent.
           </p>
           <div className="flex justify-center space-x-4">
             <Link

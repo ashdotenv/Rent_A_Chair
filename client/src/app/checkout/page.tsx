@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import * as yup from "yup";
 import { usePlaceRentalMutation } from "@/redux/features/rental/rentaApi";
 import { useInitiatePaymentMutation } from "@/redux/features/khalti/khaltiApi";
+import { toast } from "sonner";
 
 const schema = yup.object().shape({
   name: yup.string().required("Name is required"),
@@ -32,6 +33,7 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [redirecting, setRedirecting] = useState(false);
   const router = useRouter();
 
   // Form state
@@ -135,9 +137,14 @@ export default function CheckoutPage() {
           rentalStatus: "PENDING",
         });
         if (apiError || !data?.success) throw new Error(data?.message || "Cash payment failed");
+        toast.success("Order placed successfully! Redirecting to your rentals...");
+        dispatch(clearCart());
+        // Redirect to dashboard/rentals after successful cash on delivery
+        setRedirecting(true);
+        setTimeout(() => {
+          router.push("/dashboard/rentals");
+        }, 900);
       }
-      setSuccess("Order placed successfully!");
-      dispatch(clearCart());
     } catch (err: any) {
       setError(err.message || "Checkout failed");
     } finally {
@@ -210,7 +217,7 @@ export default function CheckoutPage() {
                 <img src={item.image} alt={item.title} className="w-16 h-16 object-cover rounded" />
                 <div className="flex-1">
                   <div className="font-semibold text-gray-900">{item.title}</div>
-                  <div className="text-gray-600 text-sm">₹ {item.dailyRate} per day</div>
+                  <div className="text-gray-600 text-sm">रु {item.dailyRate} per day</div>
                   <div className="flex items-center gap-2 mt-2">
                     <button
                       className="w-7 h-7 rounded border border-gray-300 flex items-center justify-center text-lg"
@@ -253,16 +260,45 @@ export default function CheckoutPage() {
           </div>
           <div className="flex justify-between items-center text-lg font-semibold mb-6">
             <span>Total</span>
-            <span>₹ {cartTotal}</span>
+            <span>रु {cartTotal}</span>
           </div>
           {error && <div className="text-red-500 mb-4">{error}</div>}
-          {success && <div className="text-green-600 mb-4">{success}</div>}
+          {success && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-medium text-green-800">{success}</p>
+                  {redirecting && (
+                    <div className="mt-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
+                          <span className="ml-2 text-sm text-green-600">Redirecting...</span>
+                        </div>
+                        <button
+                          onClick={() => router.push("/dashboard/rentals")}
+                          className="text-sm text-green-600 hover:text-green-800 underline"
+                        >
+                          Go now
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
           <button
-            className="w-full bg-[#1980E5] hover:bg-[#1565C0] text-white font-semibold py-3 rounded text-lg transition"
+            className="w-full bg-[#1980E5] hover:bg-[#1565C0] text-white font-semibold py-3 rounded text-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleCheckout}
-            disabled={loading}
+            disabled={loading || !!success}
           >
-            {loading ? "Processing..." : paymentMethod === "KHALTI" ? "Pay with Khalti" : "Place Order"}
+            {loading ? "Processing..." : !!success ? "Order Placed!" : paymentMethod === "KHALTI" ? "Pay with Khalti" : "Place Order"}
           </button>
         </>
       )}

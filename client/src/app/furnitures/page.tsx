@@ -154,7 +154,7 @@ export default function FurnituresPage() {
                             <h2 className="font-semibold text-lg mb-1 truncate">{item.title}</h2>
                             <p className="text-gray-500 text-sm mb-2 truncate">{item.description}</p>
                             <div className="flex items-center justify-between mt-2">
-                              <span className="text-xl font-bold text-[#1980E5]">₹{item.dailyRate}/day</span>
+                              <span className="text-xl font-bold text-[#1980E5]">रु{item.dailyRate}/day</span>
                               <span className="text-xs text-gray-400">{item.category.replace("_", " ")}</span>
                             </div>
                           </CardContent>

@@ -79,7 +79,7 @@ export default function PaymentVerifyPage() {
           <div className="mb-4 text-sm text-gray-500">
             <div><span className="font-semibold">Order:</span> {orderName}</div>
             <div><span className="font-semibold">Transaction ID:</span> {transactionId}</div>
-            <div><span className="font-semibold">Amount:</span> {amount && `₹ ${Number(amount) / 100}`}</div>
+            <div><span className="font-semibold">Amount:</span> {amount && `रु ${Number(amount) / 100}`}</div>
             <div><span className="font-semibold">PIDX:</span> {pidx}</div>
           </div>
           <div className="flex gap-4">

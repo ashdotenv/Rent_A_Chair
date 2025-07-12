@@ -1,5 +1,17 @@
 import { Router } from "express";
-import { createFurniture, getAllRentals, getAllUsers, updateFurniture, updateRentalStatus, updateUserRole } from "../controllers/admin.controller";
+import { 
+    createFurniture, 
+    getAllRentals, 
+    getAllUsers, 
+    updateFurniture, 
+    updateRentalStatus, 
+    updateUserRole,
+    createBundle,
+    getAllBundles,
+    getBundleById,
+    updateBundle,
+    deleteBundle
+} from "../controllers/admin.controller";
 const router = Router()
 import analyticsRoute from "./analytics.routes"
 router.get("/users", getAllUsers)
@@ -10,4 +22,12 @@ router.put("/update-user-role", updateUserRole)
 router.delete("/delete-furniture/:id", updateFurniture)
 router.use("/analytics", analyticsRoute)
 router.put("/update-rental-status/:id", updateRentalStatus)
+
+// Bundle routes
+router.post("/bundles", createBundle)
+router.get("/bundles", getAllBundles)
+router.get("/bundles/:id", getBundleById)
+router.put("/bundles/:id", updateBundle)
+router.delete("/bundles/:id", deleteBundle)
+
 export default router   

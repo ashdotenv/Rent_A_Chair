@@ -174,6 +174,7 @@ model Rental {
   startDate              DateTime
   endDate                DateTime
   totalAmount            Float
+  quantity               Int                        @default(1)
   discountCode           String?                    @default("")
   deliveryStreet         String
   deliveryCity           String
@@ -433,7 +434,7 @@ model RentToOwnAgreement {
   id                   String       @id @default(uuid())
   userId               String
   furnitureId          String
-  rentalId             String       @unique // This is the foreign key to Rental.id
+  rentalId             String       @unique 
   optionFee            Float
   purchasePrice        Float
   rentCreditPercentage Float
@@ -446,7 +447,6 @@ model RentToOwnAgreement {
   updatedAt            DateTime     @updatedAt
   user                 User         @relation(fields: [userId], references: [id])
   furniture            Furniture    @relation(fields: [furnitureId], references: [id])
-  // Corrected: The 'rental' field defines the relation from RentToOwnAgreement to Rental
   rental               Rental       @relation(fields: [rentalId], references: [id])
 }
 

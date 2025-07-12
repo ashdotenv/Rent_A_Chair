@@ -27,6 +27,8 @@ import { toast } from "sonner"
 import { CheckCircle } from "lucide-react"
 import { Sheet, SheetTrigger, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { updateQuantity, removeFromCart } from "@/redux/features/cart/cartSlice";
+import Image from "next/image"
+import Logo from "../../public/Logo.png"
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -66,10 +68,9 @@ export default function Navbar() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-[#1980E5] rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">RC</span>
-              </div>
-              <span className="text-xl font-bold text-black">Rent A Chair</span>
+             
+              {/* <span className="text-xl font-bold text-black">Rent A Chair</span> */}
+              <Image src={Logo} height={80} width={80} alt="Logo" />
             </Link>
           </div>
 
@@ -120,7 +121,7 @@ export default function Navbar() {
                               <img src={item.image} alt={item.title} className="w-16 h-16 object-cover rounded" />
                               <div className="flex-1">
                                 <div className="font-semibold text-gray-900">{item.title}</div>
-                                <div className="text-gray-600 text-sm">₹ {item.dailyRate} per day</div>
+                                <div className="text-gray-600 text-sm">रु {item.dailyRate} per day</div>
                                 <div className="flex items-center gap-2 mt-2">
                                   <button
                                     className="w-7 h-7 rounded border border-gray-300 flex items-center justify-center text-lg"
@@ -143,7 +144,7 @@ export default function Navbar() {
                         <div className="mt-4 border-t pt-4">
                           <div className="flex justify-between font-semibold text-lg">
                             <span>Total</span>
-                            <span>₹ {cartTotal}</span>
+                            <span>रु {cartTotal}</span>
                           </div>
                           <Link href="/checkout" className="block w-full mt-4">
                             <span className="w-full inline-block text-center bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded transition">Go to Checkout</span>

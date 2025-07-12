@@ -105,6 +105,11 @@ const adminNavigationItems = [
     icon: Package,
   },
   {
+    title: "Bundles",
+    href: "/admin/bundles",
+    icon: Package,
+  },
+  {
     title: "User Management",
     href: "/admin/users",
     icon: Users,
@@ -113,11 +118,6 @@ const adminNavigationItems = [
     title: "Rental Management",
     href: "/admin/rentals",
     icon: ShoppingCart,
-  },
-  {
-    title: "Inventory",
-    href: "/admin/inventory",
-    icon: Building2,
   },
   {
     title: "Analytics",
