@@ -20,9 +20,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 lg:pl-64">
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col lg:pt-16">
+      <div className="hidden lg:flex lg:flex-col lg:w-64 lg:pt-16 lg:h-screen lg:fixed lg:inset-y-0 lg:z-50">
         <Sidebar user={user} />
       </div>
 
@@ -42,8 +42,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
 
       {/* Page content */}
-      <main className="py-6">
-        <div className="w-4/5 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <main className="flex-1 py-6 lg:ml-64">
+        <div className="max-w-7xl px-4 sm:px-6 lg:px-8 mx-auto">
           {children}
         </div>
       </main>

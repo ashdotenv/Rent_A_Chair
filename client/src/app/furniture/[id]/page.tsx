@@ -6,6 +6,8 @@ import { addToCart, updateQuantity, removeFromCart } from "@/redux/features/cart
 import { Sheet, SheetTrigger, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useRef, useState } from "react";
 import Link from "next/link";
+import { Heart } from "lucide-react";
+import { addToWishlist, removeFromWishlist } from "@/redux/features/wishlist/wishlistSlice";
 
 
 export default function FurnitureDetailPage() {
@@ -18,6 +20,8 @@ export default function FurnitureDetailPage() {
   const [cartOpen, setCartOpen] = useState(false);
   const cart = useAppSelector((state) => state.cart.items);
   const cartTotal = cart.reduce((sum, item) => sum + item.quantity * item.dailyRate, 0);
+  const wishlistIds = useAppSelector((state) => state.wishlist.ids);
+  const isWishlisted = furniture ? wishlistIds.includes(furniture.id) : false;
 
   // Mock discount logic
   const originalPrice = furniture?.originalPrice || furniture?.dailyRate * 1.3 || 0;
@@ -38,8 +42,8 @@ export default function FurnitureDetailPage() {
 
   if (isLoading) return <div className="p-8">Loading...</div>;
   if (isError || !furniture) return <div className="p-8 text-red-500">Furniture not found.</div>;
-  
-  
+
+
   return (
     <div className="max-w-6xl mx-auto p-8 grid grid-cols-1 md:grid-cols-2 gap-10">
       {/* Image Gallery */}
@@ -70,11 +74,26 @@ export default function FurnitureDetailPage() {
         )}
       </div>
       {/* Product Info */}
-      <div>
+      <div className="relative">
+        <button
+          className={`absolute top-0 right-0 z-10 p-2 rounded-full bg-white shadow transition-colors ${isWishlisted ? "text-red-500" : "text-gray-400 hover:text-red-500"}`}
+          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          onClick={e => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (isWishlisted) {
+              dispatch(removeFromWishlist(furniture.id));
+            } else {
+              dispatch(addToWishlist(furniture.id));
+            }
+          }}
+        >
+          <Heart fill={isWishlisted ? "#ef4444" : "none"} className="h-7 w-7" />
+        </button>
         <h1 className="text-2xl md:text-3xl font-bold mb-2">{furniture.title}</h1>
         <div className="flex items-center gap-3 mb-2">
-        
-       
+
+
           <span className="text-2xl font-bold text-gray-900"> ₹ {furniture.dailyRate}per day</span>
           {discount > 0 && (
             <span className="bg-green-100 text-green-700 text-xs font-semibold px-2 py-1 rounded">{discount}% off</span>
@@ -142,7 +161,7 @@ export default function FurnitureDetailPage() {
                   <span>₹ {cartTotal}</span>
                 </div>
                 <button className="w-full mt-4 bg-[#1980E5] hover:bg-[#1565C0] text-white font-semibold py-2 rounded transition" >
-                <Link href={"/checkout"} >Checkout</Link>
+                  <Link href={"/checkout"} >Checkout</Link>
                 </button>
               </div>
             </div>

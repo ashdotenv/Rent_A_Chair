@@ -12,60 +12,74 @@ export const initiatePayment = catchAsyncError(
         return next(new ErrorHandler("Unauthorized", 401));
       }
       const {
-        furnitureId,
-        rentalType,
+        items,
         startDate,
         endDate,
         deliveryAddress,
-        purchase_order_name,
         customer_info,
-        quantity
+        discountCode,
+        paymentMethod
       } = req.body;
 
-      const furniture = await prisma.furniture.findUnique({ where: { id: furnitureId } });
-      if (!furniture) return next(new ErrorHandler("Furniture not found", 404));
-      if (furniture.availableQuantity < 1) return next(new ErrorHandler("Furniture is currently out of stock", 400));
+      if (!Array.isArray(items) || items.length === 0) {
+        return next(new ErrorHandler("No items provided", 400));
+      }
       const start = new Date(startDate);
       const end = new Date(endDate);
       const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-      let rentalRate = 0;
-      if (rentalType === "DAILY") rentalRate = furniture.dailyRate;
-      else if (rentalType === "WEEKLY") rentalRate = furniture.weeklyRate;
-      else rentalRate = furniture.monthlyRate;
-      const qty = quantity ? Number(quantity) : 1;
-      const totalAmount = rentalRate * totalDays * qty;
-
-      // Create rental (PENDING)
-      const rental = await prisma.rental.create({
-        data: {
-          userId: req.user.id,
-          furnitureId,
-          rentalType,
-          startDate: new Date(startDate),
-          endDate: new Date(endDate),
-          totalAmount: totalAmount,
-          paymentMethod: "KHALTI",
-          paymentStatus: "PENDING",
-          status: "PENDING",
-          deliveryStreet: deliveryAddress.street,
-          deliveryCity: deliveryAddress.city,
-          deliveryState: deliveryAddress.state,
-          deliveryPostalCode: deliveryAddress.postalCode,
-          deliveryCountry: deliveryAddress.country,
-          discountCode: req.body.discountCode || null,
-        }
-      });
-
-      // Create payment (PENDING)
+      let totalAmount = 0;
+      const createdRentals = [];
+      for (const item of items) {
+        const { furnitureId, quantity = 1, rentalType, purchase_order_name } = item;
+        const furniture = await prisma.furniture.findUnique({ where: { id: furnitureId } });
+        if (!furniture) return next(new ErrorHandler("Furniture not found", 404));
+        if (furniture.availableQuantity < quantity) return next(new ErrorHandler("Not enough furniture in stock", 400));
+        let rentalRate = 0;
+        if (rentalType === "DAILY") rentalRate = furniture.dailyRate;
+        else if (rentalType === "WEEKLY") rentalRate = furniture.weeklyRate;
+        else rentalRate = furniture.monthlyRate;
+        const itemTotal = rentalRate * totalDays * quantity;
+        totalAmount += itemTotal;
+        // Create rental (PENDING)
+        const rental = await prisma.rental.create({
+          data: {
+            userId: req.user.id,
+            furnitureId,
+            rentalType,
+            startDate: new Date(startDate),
+            endDate: new Date(endDate),
+            totalAmount: itemTotal,
+            paymentMethod: "KHALTI",
+            paymentStatus: "PENDING",
+            status: "PENDING",
+            deliveryStreet: deliveryAddress.street,
+            deliveryCity: deliveryAddress.city,
+            deliveryState: deliveryAddress.state,
+            deliveryPostalCode: deliveryAddress.postalCode,
+            deliveryCountry: deliveryAddress.country,
+            discountCode: discountCode || null
+            // quantity // removed, not in schema
+          }
+        });
+        createdRentals.push(rental);
+        await prisma.furniture.update({
+          where: { id: furnitureId },
+          data: {
+            availableQuantity: {
+              decrement: quantity
+            }
+          }
+        });
+      }
+      // Create payment (PENDING) for the first rental only (schema limitation)
       const payment = await prisma.payment.create({
         data: {
-          rentalId: rental.id,
           paymentMethod: "KHALTI",
           status: "PENDING",
-          amount: totalAmount
+          amount: totalAmount,
+          rentalId: createdRentals[0].id, // Only one rental per payment in schema
         }
       });
-
       // Initiate Khalti payment
       const response = await axios.post(
         `${KHALTI_GATEWAY_URL}/api/v2/epayment/initiate/`,
@@ -74,7 +88,7 @@ export const initiatePayment = catchAsyncError(
           website_url: CLIENT_URL,
           amount: Math.round(totalAmount * 100), // Khalti expects paisa
           purchase_order_id: payment.id,
-          purchase_order_name: purchase_order_name || furniture.title,
+          purchase_order_name: items.map(i => i.purchase_order_name).join(", "),
           customer_info,
         },
         {
@@ -86,7 +100,7 @@ export const initiatePayment = catchAsyncError(
       );
       res.json({
         success: true,
-        rentalId: rental.id,
+        rentalIds: createdRentals.map(r => r.id),
         paymentId: payment.id,
         khalti: response.data
       });

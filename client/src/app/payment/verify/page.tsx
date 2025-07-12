@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useVerifyPaymentMutation } from "@/redux/khalti/khaltiApi";
+import { useVerifyPaymentMutation } from "@/redux/features/khalti/khaltiApi";
 
 export default function PaymentVerifyPage() {
   const params = useSearchParams();

@@ -4,7 +4,7 @@ export const publicApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAllFurniture: builder.query({
       query: () => "/furnitures",
-      providesTags: ["Furnitures"]
+      providesTags: ["Furniture"]
 
     }),
     getFurnitureByCategory: builder.query({

@@ -35,7 +35,7 @@ export default function DashboardPage() {
     },
     {
       title: "Wishlist Items",
-      value: "12",
+      value: "12",  
       icon: Heart,
       color: "text-red-600",
       bgColor: "bg-red-50",

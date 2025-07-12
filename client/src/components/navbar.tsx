@@ -97,62 +97,64 @@ export default function Navbar() {
 
           {/* Desktop Auth Buttons + Cart */}
           <div className="hidden md:flex items-center space-x-4">
-            <Sheet>
-              <SheetTrigger asChild>
-                <button className="relative p-2 rounded hover:bg-gray-100 transition">
-                  <ShoppingCart className="h-6 w-6 text-gray-700" />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">{cartCount}</span>
-                  )}
-                </button>
-              </SheetTrigger>
-              <SheetContent side="right">
-                <SheetTitle>Cart</SheetTitle>
-                <div className="flex flex-col gap-4 mt-4 h-full">
-                  {cart.length === 0 ? (
-                    <div className="text-gray-500 text-center mt-8">Your cart is empty.</div>
-                  ) : (
-                    <>
-                      <div className="flex-1 overflow-y-auto">
-                        {cart.map((item) => (
-                          <div key={item.id} className="flex items-center gap-4 border-b py-3">
-                            <img src={item.image} alt={item.title} className="w-16 h-16 object-cover rounded" />
-                            <div className="flex-1">
-                              <div className="font-semibold text-gray-900">{item.title}</div>
-                              <div className="text-gray-600 text-sm">₹ {item.dailyRate} per day</div>
-                              <div className="flex items-center gap-2 mt-2">
-                                <button
-                                  className="w-7 h-7 rounded border border-gray-300 flex items-center justify-center text-lg"
-                                  onClick={() => dispatch(updateQuantity({ id: item.id, quantity: Math.max(1, item.quantity - 1) }))}
-                                >-</button>
-                                <span className="w-8 text-center">{item.quantity}</span>
-                                <button
-                                  className="w-7 h-7 rounded border border-gray-300 flex items-center justify-center text-lg"
-                                  onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.quantity + 1 }))}
-                                >+</button>
-                                <button
-                                  className="ml-2 text-red-500 hover:underline text-xs"
-                                  onClick={() => dispatch(removeFromCart(item.id))}
-                                >Remove</button>
+            {!isAdmin && (
+              <Sheet>
+                <SheetTrigger asChild>
+                  <button className="relative p-2 rounded hover:bg-gray-100 transition">
+                    <ShoppingCart className="h-6 w-6 text-gray-700" />
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">{cartCount}</span>
+                    )}
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="right">
+                  <SheetTitle>Cart</SheetTitle>
+                  <div className="flex flex-col gap-4 mt-4 h-full">
+                    {cart.length === 0 ? (
+                      <div className="text-gray-500 text-center mt-8">Your cart is empty.</div>
+                    ) : (
+                      <>
+                        <div className="flex-1 overflow-y-auto">
+                          {cart.map((item) => (
+                            <div key={item.id} className="flex items-center gap-4 border-b py-3">
+                              <img src={item.image} alt={item.title} className="w-16 h-16 object-cover rounded" />
+                              <div className="flex-1">
+                                <div className="font-semibold text-gray-900">{item.title}</div>
+                                <div className="text-gray-600 text-sm">₹ {item.dailyRate} per day</div>
+                                <div className="flex items-center gap-2 mt-2">
+                                  <button
+                                    className="w-7 h-7 rounded border border-gray-300 flex items-center justify-center text-lg"
+                                    onClick={() => dispatch(updateQuantity({ id: item.id, quantity: Math.max(1, item.quantity - 1) }))}
+                                  >-</button>
+                                  <span className="w-8 text-center">{item.quantity}</span>
+                                  <button
+                                    className="w-7 h-7 rounded border border-gray-300 flex items-center justify-center text-lg"
+                                    onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.quantity + 1 }))}
+                                  >+</button>
+                                  <button
+                                    className="ml-2 text-red-500 hover:underline text-xs"
+                                    onClick={() => dispatch(removeFromCart(item.id))}
+                                  >Remove</button>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-4 border-t pt-4">
-                        <div className="flex justify-between font-semibold text-lg">
-                          <span>Total</span>
-                          <span>₹ {cartTotal}</span>
+                          ))}
                         </div>
-                        <Link href="/checkout" className="block w-full mt-4">
-                          <span className="w-full inline-block text-center bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded transition">Go to Checkout</span>
-                        </Link>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </SheetContent>
-            </Sheet>
+                        <div className="mt-4 border-t pt-4">
+                          <div className="flex justify-between font-semibold text-lg">
+                            <span>Total</span>
+                            <span>₹ {cartTotal}</span>
+                          </div>
+                          <Link href="/checkout" className="block w-full mt-4">
+                            <span className="w-full inline-block text-center bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded transition">Go to Checkout</span>
+                          </Link>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            )}
             {!isAuthenticated ? (
               <>
                 <Link href="/login">

@@ -1,4 +1,4 @@
-import { apiSlice } from "../features/api/apiSlice";
+import { apiSlice } from "../api/apiSlice";
 
 export const khaltiApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -23,7 +23,6 @@ export const khaltiApi = apiSlice.injectEndpoints({
         };
       },
     }),
-    // Add more Khalti endpoints as needed
   }),
 });
 

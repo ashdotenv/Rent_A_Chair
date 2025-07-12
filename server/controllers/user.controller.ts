@@ -133,3 +133,34 @@ export const getReferralHistory = async (req: Request, res: Response, next: Next
         next(error)
     }
 }
+
+export const getMyRentals = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) {
+        return next(new ErrorHandler("Unauthorized", 401));
+      }
+      const rentals = await prisma.rental.findMany({
+        where: { userId: req.user.id },
+        orderBy: { startDate: "desc" },
+        include: {
+          furniture: {
+            select: {
+              id: true,
+              title: true,
+              images: true,
+              category: true,
+              dailyRate: true,
+              weeklyRate: true,
+              monthlyRate: true,
+            }
+          },
+          payment: true,
+        }
+      });
+      res.status(200).json({ success: true, rentals });
+    } catch (error) {
+      return next(error);
+    }
+  }
+);

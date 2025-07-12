@@ -16,84 +16,84 @@ export const placeRental = catchAsyncError(
             }
 
             const {
-                furnitureId,
-                rentalType,
+                items,
                 startDate,
                 endDate,
                 paymentMethod,
                 paymentStatus,
                 rentalStatus,
                 discountCode,
-                deliveryAddress
+                deliveryAddress,
+                customer_info
             } = req.body
 
-            if (!validRentalTypes.includes(rentalType)) {
-                return next(new ErrorHandler("Invalid rental type", 400))
+            if (!Array.isArray(items) || items.length === 0) {
+                return next(new ErrorHandler("No rental items provided", 400))
             }
 
-            if (!validRentalStatuses.includes(rentalStatus)) {
-
-                return next(new ErrorHandler("Invalid rental status", 400))
-            }
-
-            if (!validPaymentMethods.includes(paymentMethod)) {
-                return next(new ErrorHandler("Invalid payment method", 400))
-            }
-
-            if (!validPaymentStatuses.includes(paymentStatus)) {
-                return next(new ErrorHandler("Invalid payment status", 400))
-            }
-
-            const furniture = await prisma.furniture.findUnique({
-                where: { id: furnitureId }
-            })
-
-            if (!furniture) {
-                return next(new ErrorHandler("Furniture not found", 404))
-            }
-
-            if (furniture.availableQuantity < 1) {
-                return next(new ErrorHandler("Furniture is currently out of stock", 400))
-            }
-
-            let rentalRate = 0
-            if (rentalType === "DAILY") rentalRate = furniture.dailyRate
-            else if (rentalType === "WEEKLY") rentalRate = furniture.weeklyRate
-            else rentalRate = furniture.monthlyRate
-
-            const rental = await prisma.rental.create({
-                data: {
-                    userId: req.user.id,
-                    furnitureId,
-                    rentalType,
-                    startDate: new Date(startDate),
-                    endDate: new Date(endDate),
-                    totalAmount: rentalRate,
-                    paymentMethod,
-                    paymentStatus,
-                    status: rentalStatus,
-                    discountCode: discountCode || null,
-                    deliveryStreet: deliveryAddress.street,
-                    deliveryCity: deliveryAddress.city,
-                    deliveryState: deliveryAddress.state,
-                    deliveryPostalCode: deliveryAddress.postalCode,
-                    deliveryCountry: deliveryAddress.country
+            const createdRentals = [];
+            for (const item of items) {
+                const { furnitureId, quantity = 1, rentalType } = item;
+                if (!validRentalTypes.includes(rentalType)) {
+                    return next(new ErrorHandler("Invalid rental type", 400))
                 }
-            })
-
-            await prisma.furniture.update({
-                where: { id: furnitureId },
-                data: {
-                    availableQuantity: {
-                        decrement: 1
+                if (!validRentalStatuses.includes(rentalStatus)) {
+                    return next(new ErrorHandler("Invalid rental status", 400))
+                }
+                if (!validPaymentMethods.includes(paymentMethod)) {
+                    return next(new ErrorHandler("Invalid payment method", 400))
+                }
+                if (!validPaymentStatuses.includes(paymentStatus)) {
+                    return next(new ErrorHandler("Invalid payment status", 400))
+                }
+                const furniture = await prisma.furniture.findUnique({
+                    where: { id: furnitureId }
+                })
+                if (!furniture) {
+                    return next(new ErrorHandler("Furniture not found", 404))
+                }
+                if (furniture.availableQuantity < quantity) {
+                    return next(new ErrorHandler("Not enough furniture in stock", 400))
+                }
+                let rentalRate = 0
+                if (rentalType === "DAILY") rentalRate = furniture.dailyRate
+                else if (rentalType === "WEEKLY") rentalRate = furniture.weeklyRate
+                else rentalRate = furniture.monthlyRate
+                const totalAmount = rentalRate * quantity
+                const rental = await prisma.rental.create({
+                    data: {
+                        userId: req.user.id,
+                        furnitureId,
+                        rentalType,
+                        startDate: new Date(startDate),
+                        endDate: new Date(endDate),
+                        totalAmount,
+                        paymentMethod,
+                        paymentStatus,
+                        status: rentalStatus,
+                        discountCode: discountCode || null,
+                        deliveryStreet: deliveryAddress.street,
+                        deliveryCity: deliveryAddress.city,
+                        deliveryState: deliveryAddress.state,
+                        deliveryPostalCode: deliveryAddress.postalCode,
+                        deliveryCountry: deliveryAddress.country,
+                        quantity
                     }
-                }
-            })
-
+                })
+                await prisma.furniture.update({
+                    where: { id: furnitureId },
+                    data: {
+                        availableQuantity: {
+                            decrement: quantity
+                        }
+                    }
+                })
+                createdRentals.push(rental)
+            }
             res.status(201).json({
                 success: true,
-                message: "Rental created successfully",
-                rental
+                message: "Rentals created successfully",
+                rentals: createdRentals
             })
         } catch (error) {
             return next(error)

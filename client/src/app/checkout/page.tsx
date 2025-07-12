@@ -4,8 +4,8 @@ import { updateQuantity, removeFromCart, clearCart } from "@/redux/features/cart
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import * as yup from "yup";
-import { useInitiatePaymentMutation } from "@/redux/khalti/khaltiApi";
 import { usePlaceRentalMutation } from "@/redux/features/rental/rentaApi";
+import { useInitiatePaymentMutation } from "@/redux/features/khalti/khaltiApi";
 
 const schema = yup.object().shape({
   name: yup.string().required("Name is required"),
@@ -99,53 +99,45 @@ export default function CheckoutPage() {
     setLoading(true);
     try {
       if (cart.length === 0) throw new Error("Cart is empty");
-      for (const item of cart) {
-        if (paymentMethod === "KHALTI") {
-          const { data, error: apiError } = await initiatePayment({
-            furnitureId: item.id,
-            rentalType: "DAILY",
-            startDate,
-            endDate,
-            quantity: item.quantity,
-            deliveryAddress: {
-              street,
-              city,
-              state: stateVal,
-              postalCode,
-              country
-            },
-            purchase_order_name: item.title,
-            return_url: window.location.origin + "/payment/verify",
-            customer_info: { name, email },
-            discountCode: discountCode || undefined
-          });
-          if (apiError || !data?.success) throw new Error(data?.message || "Khalti payment failed");
-          window.location.href = data.khalti.payment_url;
-          return;
-        } else {
-          const { data, error: apiError } = await placeRental({
-            furnitureId: item.id,
-            rentalType: "DAILY",
-            startDate,
-            endDate,
-            paymentMethod: "CASH",
-            paymentStatus: "PENDING",
-            rentalStatus: "PENDING",
-            deliveryAddress: {
-              street,
-              city,
-              state: stateVal,
-              postalCode,
-              country
-            },
-            discountCode: discountCode || undefined
-          });
-          if (apiError || !data?.success) throw new Error(data?.message || "Cash payment failed");
-        }
+      const payload = {
+        items: cart.map(item => ({
+          furnitureId: item.id,
+          quantity: item.quantity,
+          rentalType: "DAILY",
+          purchase_order_name: item.title,
+          dailyRate: item.dailyRate,
+        })),
+        startDate,
+        endDate,
+        deliveryAddress: {
+          street,
+          city,
+          state: stateVal,
+          postalCode,
+          country
+        },
+        customer_info: { name, email },
+        discountCode: discountCode || undefined,
+        paymentMethod,
+      };
+      if (paymentMethod === "KHALTI") {
+        const { data, error: apiError } = await initiatePayment({
+          ...payload,
+          return_url: window.location.origin + "/payment/verify",
+        });
+        if (apiError || !data?.success) throw new Error(data?.message || "Khalti payment failed");
+        window.location.href = data.khalti.payment_url;
+        return;
+      } else {
+        const { data, error: apiError } = await placeRental({
+          ...payload,
+          paymentStatus: "PENDING",
+          rentalStatus: "PENDING",
+        });
+        if (apiError || !data?.success) throw new Error(data?.message || "Cash payment failed");
       }
       setSuccess("Order placed successfully!");
       dispatch(clearCart());
-      // setTimeout(() => router.push("/dashboard/rentals"), 1500);
     } catch (err: any) {
       setError(err.message || "Checkout failed");
     } finally {

@@ -2,11 +2,14 @@
 
 import React from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { DataTable } from "@/components/dashboard/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Eye, Edit, Trash2 } from "lucide-react";
+import { useGetMyRentalsQuery } from "@/redux/features/user/userApi";
+import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
+import { Calendar, CreditCard, Package, Eye } from "lucide-react";
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 
 export default function RentalsPage() {
   const { user } = useAuth();
@@ -15,120 +18,7 @@ export default function RentalsPage() {
     return null;
   }
 
-  const rentalData = [
-    {
-      id: "RENT001",
-      furniture: "Modern Sofa Set",
-      startDate: "2024-01-15",
-      endDate: "2024-02-15",
-      status: "ACTIVE",
-      amount: 299.99,
-      paymentStatus: "SUCCESS",
-    },
-    {
-      id: "RENT002",
-      furniture: "Dining Table",
-      startDate: "2024-01-01",
-      endDate: "2024-01-31",
-      status: "COMPLETED",
-      amount: 199.99,
-      paymentStatus: "SUCCESS",
-    },
-    {
-      id: "RENT003",
-      furniture: "Office Chair",
-      startDate: "2024-02-01",
-      endDate: "2024-03-01",
-      status: "PENDING",
-      amount: 89.99,
-      paymentStatus: "PENDING",
-    },
-    {
-      id: "RENT004",
-      furniture: "Bed Frame",
-      startDate: "2024-01-20",
-      endDate: "2024-02-20",
-      status: "ACTIVE",
-      amount: 159.99,
-      paymentStatus: "SUCCESS",
-    },
-  ];
-
-  const columns = [
-    {
-      key: "id",
-      label: "Rental ID",
-    },
-    {
-      key: "furniture",
-      label: "Furniture",
-    },
-    {
-      key: "startDate",
-      label: "Start Date",
-    },
-    {
-      key: "endDate",
-      label: "End Date",
-    },
-    {
-      key: "status",
-      label: "Status",
-      render: (value: string) => {
-        const variants = {
-          ACTIVE: "default",
-          COMPLETED: "secondary",
-          PENDING: "outline",
-          CANCELLED: "destructive",
-        } as const;
-
-        return (
-          <Badge variant={variants[value as keyof typeof variants] || "outline"}>
-            {value}
-          </Badge>
-        );
-      },
-    },
-    {
-      key: "amount",
-      label: "Amount",
-      render: (value: number) => `$${value.toFixed(2)}`,
-    },
-    {
-      key: "paymentStatus",
-      label: "Payment",
-      render: (value: string) => {
-        const variants = {
-          SUCCESS: "default",
-          PENDING: "outline",
-          FAILED: "destructive",
-        } as const;
-
-        return (
-          <Badge variant={variants[value as keyof typeof variants] || "outline"}>
-            {value}
-          </Badge>
-        );
-      },
-    },
-    {
-      key: "actions",
-      label: "Actions",
-      render: () => (
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm">
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      ),
-    },
-  ];
+  const { data: rentals, isLoading } = useGetMyRentalsQuery();
 
   return (
     <DashboardLayout>
@@ -145,14 +35,85 @@ export default function RentalsPage() {
           </Button>
         </div>
 
-        <DataTable
-          title="Rental History"
-          description="View and manage your rental history"
-          columns={columns}
-          data={rentalData}
-          searchable
-          filterable
-        />
+        <div className="bg-white rounded-xl shadow p-4 overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Rental ID</TableHead>
+                <TableHead>Product</TableHead>
+                <TableHead>Dates</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Payment</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Delivery</TableHead>
+                <TableHead>View</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading
+                ? Array.from({ length: 6 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                      <TableCell><Skeleton className="h-8 w-32" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-8" /></TableCell>
+                    </TableRow>
+                  ))
+                : rentals && rentals.length > 0 ? (
+                    rentals.map((rental: any) => (
+                      <TableRow key={rental.id}>
+                        <TableCell className="font-mono text-xs text-gray-500">{rental.id}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={rental.furniture?.images?.[0]?.url || "/placeholder.jpg"}
+                              alt={rental.furniture?.title}
+                              className="w-12 h-12 object-cover rounded"
+                            />
+                            <div>
+                              <div className="font-semibold text-gray-900">{rental.furniture?.title}</div>
+                              <div className="text-xs text-gray-500">{rental.furniture?.category?.replace("_", " ")}</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {new Date(rental.startDate).toLocaleDateString()}<br />
+                          <span className="text-xs text-gray-400">to</span><br />
+                          {new Date(rental.endDate).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={rental.status === "ACTIVE" ? "default" : rental.status === "COMPLETED" ? "secondary" : rental.status === "CANCELLED" ? "destructive" : "outline"}>
+                            {rental.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={rental.payment?.status === "SUCCESS" ? "default" : rental.payment?.status === "FAILED" ? "destructive" : "outline"}>
+                            {rental.payment?.status || "PENDING"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-bold text-[#1980E5]">₹{rental.totalAmount}</TableCell>
+                        <TableCell className="text-xs text-gray-500">
+                          {rental.deliveryCity}, {rental.deliveryCountry}
+                        </TableCell>
+                        <TableCell>
+                          <Link href={`/furniture/${rental.furniture?.id}`} className="inline-flex items-center gap-1 text-[#1980E5] hover:underline">
+                            <Eye className="h-4 w-4" /> View
+                          </Link>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center text-gray-500 py-16 text-lg">No rentals found.</TableCell>
+                    </TableRow>
+                  )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </DashboardLayout>
   );
