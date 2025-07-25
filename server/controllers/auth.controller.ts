@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken"
 import { ErrorHandler } from "../utils/ErrorHandler"
 import { catchAsyncError } from "../middleware/catchAsyncError"
 import { prisma } from "../utils/prismaClient"
-import { JWT_SECRET, PASSWORD_RESET_SECRET } from "../config/env.config"
+import { JWT_SECRET, NODE_ENV, PASSWORD_RESET_SECRET } from "../config/env.config"
 import { sendToken } from "../utils/jwt"
 import { sendEmail } from "../utils/sendEmail"
 import ejs from "ejs"
@@ -177,3 +177,23 @@ export const changePassword = async (req: Request, res: Response, next: NextFunc
         next(error)
     }
 }
+
+export const logoutUser = catchAsyncError(
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            res.cookie("token", "", {
+                httpOnly: true,
+                expires: new Date(0),
+                secure: NODE_ENV === "production",
+                sameSite: "lax"
+            });
+
+            res.status(200).json({
+                success: true,
+                message: "Logged out successfully"
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+);

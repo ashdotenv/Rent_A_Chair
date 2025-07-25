@@ -78,58 +78,58 @@ export default function HomePage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-4xl mx-auto">
             {/* SOFA */}
             <div className="bg-white rounded-xl shadow hover:shadow-lg transition p-3 flex flex-col items-center border border-[#e3eaf6] group">
-              <div className="w-24 h-24 mb-2 flex items-center justify-center overflow-hidden rounded-lg bg-[#f5faff] border border-[#e3eaf6]">
+              <Link href="/category/sofa" className="w-24 h-24 mb-2 flex items-center justify-center overflow-hidden rounded-lg bg-[#f5faff] border border-[#e3eaf6]">
                 <img src="https://m.media-amazon.com/images/I/51kPly+Jm7L._AC_US750_.jpg" alt="Sofa" className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300" />
-              </div>
+              </Link>
               <div className="text-[#1565C0] font-semibold text-sm text-center">Sofa</div>
             </div>
             {/* BED */}
             <div className="bg-white rounded-xl shadow hover:shadow-lg transition p-3 flex flex-col items-center border border-[#e3eaf6] group">
-              <div className="w-24 h-24 mb-2 flex items-center justify-center overflow-hidden rounded-lg bg-[#f5faff] border border-[#e3eaf6]">
+              <Link href="/category/bed" className="w-24 h-24 mb-2 flex items-center justify-center overflow-hidden rounded-lg bg-[#f5faff] border border-[#e3eaf6]">
                 <img src="https://images-cdn.ubuy.co.in/6366357bc8e6f5565479065a-queen-size-storage-bed-btmway-modern.jpg" alt="Bed" className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300" />
-              </div>
+              </Link>
               <div className="text-[#1565C0] font-semibold text-sm text-center">Bed</div>
             </div>
             {/* TABLE */}
             <div className="bg-white rounded-xl shadow hover:shadow-lg transition p-3 flex flex-col items-center border border-[#e3eaf6] group">
-              <div className="w-24 h-24 mb-2 flex items-center justify-center overflow-hidden rounded-lg bg-[#f5faff] border border-[#e3eaf6]">
+              <Link href="/category/table" className="w-24 h-24 mb-2 flex items-center justify-center overflow-hidden rounded-lg bg-[#f5faff] border border-[#e3eaf6]">
                 <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTDgLG7rQoAI5IDWnm9Wb0LMbl_D7_Lwx5CJA&s" alt="Table" className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300" />
-              </div>
+              </Link>
               <div className="text-[#1565C0] font-semibold text-sm text-center">Table</div>
             </div>
             {/* CHAIR */}
             <div className="bg-white rounded-xl shadow hover:shadow-lg transition p-3 flex flex-col items-center border border-[#e3eaf6] group">
-              <div className="w-24 h-24 mb-2 flex items-center justify-center overflow-hidden rounded-lg bg-[#f5faff] border border-[#e3eaf6]">
+              <Link href="/category/chair" className="w-24 h-24 mb-2 flex items-center justify-center overflow-hidden rounded-lg bg-[#f5faff] border border-[#e3eaf6]">
                 <img src="https://kursinepal.com/wp-content/uploads/2022/08/IMG_0871.jpg" alt="Chair" className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300" />
-              </div>
+              </Link>
               <div className="text-[#1565C0] font-semibold text-sm text-center">Chair</div>
             </div>
             {/* WARDROBE */}
             <div className="bg-white rounded-xl shadow hover:shadow-lg transition p-3 flex flex-col items-center border border-[#e3eaf6] group">
-              <div className="w-24 h-24 mb-2 flex items-center justify-center overflow-hidden rounded-lg bg-[#f5faff] border border-[#e3eaf6]">
+              <Link href="/category/wardrobe" className="w-24 h-24 mb-2 flex items-center justify-center overflow-hidden rounded-lg bg-[#f5faff] border border-[#e3eaf6]">
                 <img src="https://i5.walmartimages.com/seo/KULAGAGA-Large-Wardrobe-Closet-4-Door-Armoire-Storage-Cabinet-with-Hanging-Rods-and-Shelves-for-Bedroom-White_a100a7a7-694b-41c4-b477-53fa4544584e.5eb4d39736fedb655128e2974e86e35c.jpeg" alt="Wardrobe" className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300" />
-              </div>
+              </Link>
               <div className="text-[#1565C0] font-semibold text-sm text-center">Wardrobe</div>
             </div>
             {/* DESK */}
             <div className="bg-white rounded-xl shadow hover:shadow-lg transition p-3 flex flex-col items-center border border-[#e3eaf6] group">
-              <div className="w-24 h-24 mb-2 flex items-center justify-center overflow-hidden rounded-lg bg-[#f5faff] border border-[#e3eaf6]">
+              <Link href="/category/desk" className="w-24 h-24 mb-2 flex items-center justify-center overflow-hidden rounded-lg bg-[#f5faff] border border-[#e3eaf6]">
                 <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5ps0t-ecjLXYZcBnuYG4ws507jil1HwBWtw&s" alt="Desk" className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300" />
-              </div>
+              </Link>
               <div className="text-[#1565C0] font-semibold text-sm text-center">Desk</div>
             </div>
             {/* BOOKSHELF */}
             <div className="bg-white rounded-xl shadow hover:shadow-lg transition p-3 flex flex-col items-center border border-[#e3eaf6] group">
-              <div className="w-24 h-24 mb-2 flex items-center justify-center overflow-hidden rounded-lg bg-[#f5faff] border border-[#e3eaf6]">
+              <Link href="/category/bookshelf" className="w-24 h-24 mb-2 flex items-center justify-center overflow-hidden rounded-lg bg-[#f5faff] border border-[#e3eaf6]">
                 <img src="https://www.krovelmade.com/cdn/shop/files/floating-bookshelf-in-white-oak-bookshelves-krovel-38471450263712.jpg?v=1730271546" alt="Bookshelf" className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300" />
-              </div>
+              </Link>
               <div className="text-[#1565C0] font-semibold text-sm text-center">Bookshelf</div>
             </div>
             {/* DRESSER */}
             <div className="bg-white rounded-xl shadow hover:shadow-lg transition p-3 flex flex-col items-center border border-[#e3eaf6] group">
-              <div className="w-24 h-24 mb-2 flex items-center justify-center overflow-hidden rounded-lg bg-[#f5faff] border border-[#e3eaf6]">
+              <Link href="/category/dresser" className="w-24 h-24 mb-2 flex items-center justify-center overflow-hidden rounded-lg bg-[#f5faff] border border-[#e3eaf6]">
                 <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMD3QHi1fCgRJJax7SFxGM64S3UJjQOyFYVg&s" alt="Dresser" className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300" />
-              </div>
+              </Link>
               <div className="text-[#1565C0] font-semibold text-sm text-center">Dresser</div>
             </div>
           </div>

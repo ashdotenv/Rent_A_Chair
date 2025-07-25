@@ -71,13 +71,12 @@ export const initiatePayment = catchAsyncError(
           }
         });
       }
-      // Create payment (PENDING) for the first rental only (schema limitation)
       const payment = await prisma.payment.create({
         data: {
           paymentMethod: "KHALTI",
           status: "PENDING",
           amount: totalAmount,
-          rentalId: createdRentals[0].id, // Only one rental per payment in schema
+          rentalId: createdRentals[0].id, 
         }
       });
       // Initiate Khalti payment

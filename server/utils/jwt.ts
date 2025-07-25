@@ -1,7 +1,6 @@
 import { Response } from "express";
 import jwt from "jsonwebtoken";
 import {
-  JWT_EXPIRES_IN,
   JWT_SECRET,
   NODE_ENV,
 } from "../config/env.config";

@@ -8,7 +8,14 @@ export const userApi = apiSlice.injectEndpoints({
       query: () => '/user/rentals',
       transformResponse: (response: any) => response.rentals,
     }),
+    updateProfile: builder.mutation<any, { fullName: string } | any>({
+      query: (body) => ({
+        url: '/user/update-Profile',
+        method: 'PUT',
+        body,
+      }),
+    }),
   })
 });
 
-export const {useGetMyRentalsQuery  } = userApi; 
+export const {useGetMyRentalsQuery, useUpdateProfileMutation} = userApi; 

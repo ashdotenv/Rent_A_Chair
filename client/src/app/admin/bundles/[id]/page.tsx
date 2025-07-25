@@ -29,50 +29,46 @@ export default function BundleViewPage() {
 
   if (isLoading) {
     return (
-      <DashboardLayout>
-        <div className="space-y-6">
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="animate-pulse">
-              <div className="h-64 bg-gray-200 rounded mb-4"></div>
-              <div className="space-y-2">
-                <div className="h-4 bg-gray-200 rounded"></div>
-                <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-              </div>
-            </div>
-            <div className="animate-pulse space-y-4">
-              <div className="h-6 bg-gray-200 rounded"></div>
+            <div className="h-64 bg-gray-200 rounded mb-4"></div>
+            <div className="space-y-2">
               <div className="h-4 bg-gray-200 rounded"></div>
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
             </div>
+          </div>
+          <div className="animate-pulse space-y-4">
+            <div className="h-6 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
           </div>
         </div>
-      </DashboardLayout>
+      </div>
     );
   }
 
   if (error || !bundleData?.bundle) {
     return (
-      <DashboardLayout>
-        <div className="space-y-6">
-          <div className="text-center py-12">
-            <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Bundle not found</h3>
-            <p className="text-gray-600 mb-4">
-              The bundle you're looking for doesn't exist or has been removed.
-            </p>
-            <Link href="/admin/bundles">
-              <Button className="bg-[#1980E5] hover:bg-[#1980E5]/90">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Bundles
-              </Button>
-            </Link>
-          </div>
+      <div className="space-y-6">
+        <div className="text-center py-12">
+          <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Bundle not found</h3>
+          <p className="text-gray-600 mb-4">
+            The bundle you're looking for doesn't exist or has been removed.
+          </p>
+          <Link href="/admin/bundles">
+            <Button className="bg-[#1980E5] hover:bg-[#1980E5]/90">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Bundles
+            </Button>
+          </Link>
         </div>
-      </DashboardLayout>
+      </div>
     );
   }
 
@@ -101,41 +97,40 @@ export default function BundleViewPage() {
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/admin/bundles">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Bundles
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">{bundle.name}</h1>
-              <p className="text-gray-600">
-                Bundle details and management
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Link href={`/admin/bundles/edit/${bundle.id}`}>
-              <Button variant="outline">
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Bundle
-              </Button>
-            </Link>
-            <Button
-              variant="destructive"
-              onClick={() => setShowDeleteConfirm(true)}
-              disabled={isDeleting}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              {isDeleting ? "Deleting..." : "Delete Bundle"}
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link href="/admin/bundles">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Bundles
             </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">{bundle.name}</h1>
+            <p className="text-gray-600">
+              Bundle details and management
+            </p>
           </div>
         </div>
+        <div className="flex gap-2">
+          <Link href={`/admin/bundles/edit/${bundle.id}`}>
+            <Button variant="outline">
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Bundle
+            </Button>
+          </Link>
+          <Button
+            variant="destructive"
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={isDeleting}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            {isDeleting ? "Deleting..." : "Delete Bundle"}
+          </Button>
+        </div>
+      </div>
 
         {/* Bundle Details */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -309,7 +304,6 @@ export default function BundleViewPage() {
             </div>
           </div>
         )}
-      </div>
-    </DashboardLayout>
+    </div>
   );
 } 

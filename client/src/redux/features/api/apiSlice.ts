@@ -77,10 +77,40 @@ export const apiSlice = createApi({
       query: () => '/user/me',
       providesTags: ['User'],
     }),
+
+    logout: builder.mutation<{ success: boolean; message: string }, void>({
+      query: () => ({
+        url: '/auth/logout',
+        method: 'POST',
+      }),
+      invalidatesTags: ['Auth', 'User'],
+    }),
+
+    // Reset Password
+    resetPassword: builder.mutation<{ success: boolean; message: string; resetToken?: string }, { email: string }>({
+      query: (body) => ({
+        url: '/auth/reset-password',
+        method: 'POST',
+        body,
+      }),
+    }),
+
+    // Change Password
+    changePassword: builder.mutation<{ success: boolean; message: string }, { oldPassword?: string; newPassword: string; token?: string }>({
+      query: (body) => ({
+        url: '/auth/change-password',
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: ['Auth', 'User'],
+    }),
   }),
 })
 
 export const {
   useLoginMutation,
   useRegisterMutation,
+  useLogoutMutation,
+  useResetPasswordMutation,
+  useChangePasswordMutation,
 } = apiSlice

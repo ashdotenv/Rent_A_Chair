@@ -405,17 +405,26 @@ export const createBundle = catchAsyncError(
                 isFeatured,
                 bundleItems
             } = req.body;
-
+            
             if (!req.user) {
                 return next(new ErrorHandler("Unauthorized", 401));
             }
 
-            if (!name || !price || !bundleItems || !Array.isArray(bundleItems) || bundleItems.length === 0) {
+            let parsedBundleItems = bundleItems;
+            if (typeof bundleItems === 'string') {
+                try {
+                    parsedBundleItems = JSON.parse(bundleItems);
+                } catch (error) {
+                    return next(new ErrorHandler("Invalid bundle items format", 400));
+                }
+            }
+
+            if (!name || !price || !parsedBundleItems || !Array.isArray(parsedBundleItems) || parsedBundleItems.length === 0) {
                 return next(new ErrorHandler("Please provide bundle name, price, and at least one bundle item", 400));
             }
 
             // Validate bundle items
-            for (const item of bundleItems) {
+            for (const item of parsedBundleItems) {
                 if (!item.furnitureId || !item.quantity || item.quantity <= 0) {
                     return next(new ErrorHandler("Each bundle item must have furnitureId and valid quantity", 400));
                 }
@@ -454,7 +463,7 @@ export const createBundle = catchAsyncError(
                     imageUrl,
                     isFeatured: Boolean(isFeatured),
                     bundleItems: {
-                        create: bundleItems.map((item: any) => ({
+                        create: parsedBundleItems.map((item: any) => ({
                             furnitureId: item.furnitureId,
                             quantity: Number(item.quantity)
                         }))
@@ -615,42 +624,54 @@ export const updateBundle = catchAsyncError(
             });
 
             // Update bundle items if provided
-            if (bundleItems && Array.isArray(bundleItems)) {
-                // Delete existing bundle items
-                await prisma.bundleItem.deleteMany({
-                    where: { bundleId: id }
-                });
+            if (bundleItems) {
+                // Parse bundleItems if it's a JSON string
+                let parsedBundleItems = bundleItems;
+                if (typeof bundleItems === 'string') {
+                    try {
+                        parsedBundleItems = JSON.parse(bundleItems);
+                    } catch (error) {
+                        return next(new ErrorHandler("Invalid bundle items format", 400));
+                    }
+                }
 
-                // Create new bundle items
-                await prisma.bundleItem.createMany({
-                    data: bundleItems.map((item: any) => ({
-                        bundleId: id,
-                        furnitureId: item.furnitureId,
-                        quantity: Number(item.quantity)
-                    }))
-                });
+                if (Array.isArray(parsedBundleItems)) {
+                    // Delete existing bundle items
+                    await prisma.bundleItem.deleteMany({
+                        where: { bundleId: id }
+                    });
 
-                // Fetch updated bundle with new items
-                const finalBundle = await prisma.furnitureBundle.findUnique({
-                    where: { id },
-                    include: {
-                        bundleItems: {
-                            include: {
-                                furniture: {
-                                    include: {
-                                        images: true
+                    // Create new bundle items
+                    await prisma.bundleItem.createMany({
+                        data: parsedBundleItems.map((item: any) => ({
+                            bundleId: id,
+                            furnitureId: item.furnitureId,
+                            quantity: Number(item.quantity)
+                        }))
+                    });
+
+                    // Fetch updated bundle with new items
+                    const finalBundle = await prisma.furnitureBundle.findUnique({
+                        where: { id },
+                        include: {
+                            bundleItems: {
+                                include: {
+                                    furniture: {
+                                        include: {
+                                            images: true
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                });
+                    });
 
-                res.status(200).json({
-                    success: true,
-                    message: "Bundle updated successfully",
-                    bundle: finalBundle
-                });
+                    res.status(200).json({
+                        success: true,
+                        message: "Bundle updated successfully",
+                        bundle: finalBundle
+                    });
+                }
             } else {
                 res.status(200).json({
                     success: true,
