@@ -14,31 +14,36 @@ export const registerUser = catchAsyncError(
     async (req: Request, res: Response, next: NextFunction) => {
 
         try {
-            const { fullName, email, password, phone, address, referralCode } = req.body
+            const { referralCode } = req.query;
+            const { fullName, email, password, phone, address } = req.body;
+
             if (!fullName || !email || !password) {
-                return next(new ErrorHandler("Please provide all required fields", 400))
+                return next(new ErrorHandler("Please provide all required fields", 400));
             }
 
-            const existingUser = await prisma.user.findUnique({ where: { email } })
+            const existingUser = await prisma.user.findUnique({
+                where: { email },
+            });
+
             if (existingUser) {
-                return next(new ErrorHandler("User already exists with this email", 400))
+                return next(new ErrorHandler("User already exists with this email", 400));
             }
 
-            const hashedPassword = await bcrypt.hash(password, 12)
-            const newReferralCode = `$RAC-${Math.random().toString(36).substring(2, 10).toUpperCase()}`
+            const hashedPassword = await bcrypt.hash(password, 12);
+            const newReferralCode = `$RAC-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
 
-            let referredById: string | null = null
+            let referredById: string | null = null;
 
-            if (referralCode) {
+            if (typeof referralCode === 'string') {
                 const referrer = await prisma.user.findUnique({
                     where: { referralCode },
-                })
+                });
 
                 if (!referrer) {
-                    return next(new ErrorHandler("Invalid referral code", 400))
+                    return next(new ErrorHandler("Invalid referral code", 400));
                 }
 
-                referredById = referrer.id
+                referredById = referrer.id;
             }
 
             const user = await prisma.user.create({

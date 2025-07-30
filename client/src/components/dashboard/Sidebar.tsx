@@ -77,6 +77,11 @@ const userNavigationItems = [
     icon: Gift,
   },
   {
+    title: "Referral History",
+    href: "/dashboard/referrals",
+    icon: Users,
+  },
+  {
     title: "Reviews",
     href: "/dashboard/reviews",
     icon: Star,

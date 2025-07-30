@@ -53,6 +53,7 @@ export const apiSlice = createApi({
     'UserAnalytics',
     'RentalAnalytics',
     'FurnitureAnalytics',
+    "Referrals"
   ],
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
