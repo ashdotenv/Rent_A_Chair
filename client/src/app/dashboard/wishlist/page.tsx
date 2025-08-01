@@ -7,13 +7,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Heart } from "lucide-react";
-import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useGetAllFurnitureQuery } from "@/redux/features/public/publicApi";
 
 export default function WishlistPage() {
   const wishlistIds = useAppSelector((state) => state.wishlist.ids);
   const dispatch = useAppDispatch();
-  const { data, isLoading } = useGetAllFurnitureQuery();
+  const { data, isLoading } = useGetAllFurnitureQuery("");
   const allFurniture = data?.furniture || [];
 
   const wishlistedItems = useMemo(() => {

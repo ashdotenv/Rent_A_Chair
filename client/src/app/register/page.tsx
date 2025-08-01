@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff, User, Mail, Lock, Phone, MapPin } from "lucide-react"
 import { useRegisterMutation } from "@/redux/features/api/apiSlice"
 import { useAppDispatch, useAppSelector } from "@/redux/hooks"
@@ -52,7 +51,7 @@ export default function RegisterPage() {
   const router = useRouter()
   const dispatch = useAppDispatch()
   const error = useAppSelector(selectError)
-
+  
   const [register, { isLoading }] = useRegisterMutation()
 
   // Clear error on component mount

@@ -14,6 +14,7 @@ export const registerUser = catchAsyncError(
     async (req: Request, res: Response, next: NextFunction) => {
 
         try {
+
             const { referralCode } = req.query;
             const { fullName, email, password, phone, address } = req.body;
 

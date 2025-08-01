@@ -97,6 +97,7 @@ export const initiatePayment = catchAsyncError(
           },
         }
       );
+      console.log(response);
       res.json({
         success: true,
         rentalIds: createdRentals.map(r => r.id),

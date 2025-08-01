@@ -3,9 +3,10 @@ import { app } from '../../app';
 import { describe, it, expect, beforeAll } from 'vitest';
 
 const user = {
-  email: 'logoutuser@example.com',
-  password: 'LogoutPass123!'
+  email: 'ashishghimire092@gmail.com',
+  password: 'LoginPass123!'
 };
+
 
 let authToken: string;
 

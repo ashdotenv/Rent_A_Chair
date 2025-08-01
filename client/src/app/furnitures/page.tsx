@@ -15,7 +15,7 @@ const categories = [
 ];
 
 export default function FurnituresPage() {
-  const { data, isLoading } = useGetAllFurnitureQuery();
+  const { data, isLoading } = useGetAllFurnitureQuery("");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("ALL");
   const [color, setColor] = useState("");

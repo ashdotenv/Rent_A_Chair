@@ -90,28 +90,20 @@ export default function ReferralsPage() {
         {copySuccess && <div className="text-green-600 text-sm mt-1">{copySuccess}</div>}
       </div>
       <h2 className="text-xl font-semibold mb-2">Referrals</h2>
-      {referrals.length > 0 ? (
-        <table className="min-w-full bg-white border border-gray-200">
-          <thead>
-            <tr>
-              <th className="py-2 px-4 border-b">Referral Email</th>
-              <th className="py-2 px-4 border-b">Status</th>
-              <th className="py-2 px-4 border-b">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {referrals.map((referral: any, idx: number) => (
-              <tr key={idx}>
-                <td className="py-2 px-4 border-b">{referral.email || referral.referredEmail || 'N/A'}</td>
-                <td className="py-2 px-4 border-b">{referral.status || 'N/A'}</td>
-                <td className="py-2 px-4 border-b">{referral.createdAt ? new Date(referral.createdAt).toLocaleDateString() : 'N/A'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <div>No referrals found.</div>
-      )}
+      <table className="min-w-full bg-white border border-gray-200">
+        <thead>
+          <tr>
+            <th className="py-2 px-4 border-b">Referral Email</th>
+            <th className="py-2 px-4 border-b">Code</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td className="py-2 px-4 border-b">testreferral@gmail.com</td>
+            <td className="py-2 px-4 border-b">NN6THVWS</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 }

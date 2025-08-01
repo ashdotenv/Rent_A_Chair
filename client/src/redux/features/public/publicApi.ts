@@ -8,7 +8,7 @@ export const publicApi = apiSlice.injectEndpoints({
 
     }),
     getFurnitureByCategory: builder.query({
-      query: (category: string) => `/furnitures/${category}`,
+      query: (category: string) => `/furnitures/category/${category}`,
     }),
     getFeaturedProducts: builder.query({
       query: () => `/featuredProducts`,

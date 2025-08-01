@@ -65,6 +65,9 @@ export const adminApi = apiSlice.injectEndpoints({
 })
 
 export const {
+  useLazyGetFurnitureAnalyticsQuery,
+  useGetFurnitureAnalyticsQuery,
+  useGetRentalAnalyticsQuery,
   useGetAllUsersQuery,
   useAddFurnitureMutation,
   useUpdateFurnitureMutation,
@@ -72,7 +75,5 @@ export const {
   useUpdateUserRoleMutation,
   useUpdateRentalStatusMutation,
   useGetUserAnalyticsQuery,
-  useGetRentalAnalyticsQuery,
-  useGetFurnitureAnalyticsQuery,
   useGetAllRentalsQuery
 } = adminApi

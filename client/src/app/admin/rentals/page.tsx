@@ -27,7 +27,7 @@ const DELIVERY_STATUS_OPTIONS = [
 ];
 
 export default function AdminRentalsPage() {
-  const { data, isLoading, isError } = useGetAllRentalsQuery();
+  const { data, isLoading, isError } = useGetAllRentalsQuery("");
   const [updateRentalStatus, { isLoading: isUpdating }] = useUpdateRentalStatusMutation();
   const rentals = data?.rentals || [];
   const [editState, setEditState] = useState<Record<string, {status?: string; paymentStatus?: string; deliveryStatus?: string}>>({});
