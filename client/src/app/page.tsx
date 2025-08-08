@@ -1,8 +1,7 @@
 "use client"
 import Link from "next/link";
 import { useGetFeaturedProductsQuery } from "../redux/features/public/publicApi";
-import Image from "next/image";
-import Logo from "../../public/Logo.png"
+
 export default function HomePage() {
   const { data, isLoading, isError } = useGetFeaturedProductsQuery(1);
   const featured = data?.furniture || [];

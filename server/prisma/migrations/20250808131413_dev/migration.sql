@@ -1,46 +1,151 @@
-/*
-  Warnings:
+-- CreateTable
+CREATE TABLE `User` (
+    `id` VARCHAR(191) NOT NULL,
+    `fullName` VARCHAR(191) NOT NULL,
+    `email` VARCHAR(191) NOT NULL,
+    `password` VARCHAR(191) NOT NULL,
+    `phone` VARCHAR(191) NULL,
+    `address` VARCHAR(191) NULL,
+    `role` ENUM('USER', 'ADMIN') NOT NULL DEFAULT 'USER',
+    `loyaltyPoints` INTEGER NOT NULL DEFAULT 0,
+    `referralCode` VARCHAR(191) NOT NULL,
+    `referredById` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
 
-  - You are about to alter the column `severity` on the `damagereport` table. The data in that column could be lost. The data in that column will be cast from `Int` to `Enum(EnumId(9))`.
+    UNIQUE INDEX `User_email_key`(`email`),
+    UNIQUE INDEX `User_referralCode_key`(`referralCode`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-*/
--- DropForeignKey
-ALTER TABLE `rental` DROP FOREIGN KEY `Rental_furnitureId_fkey`;
+-- CreateTable
+CREATE TABLE `Furniture` (
+    `id` VARCHAR(191) NOT NULL,
+    `title` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NOT NULL,
+    `category` ENUM('SOFA', 'BED', 'TABLE', 'CHAIR', 'WARDROBE', 'DESK', 'BOOKSHELF', 'DRESSER', 'NIGHTSTAND', 'CABINET', 'OTTOMAN', 'RECLINER', 'BENCH', 'HUTCH', 'TV_STAND', 'DINING_SET', 'ENTRYWAY', 'STORAGE', 'KITCHEN_ISLAND', 'VANITY', 'SECTIONAL', 'LOVESEAT', 'FILING_CABINET', 'OTHER') NOT NULL,
+    `material` VARCHAR(191) NOT NULL,
+    `color` VARCHAR(191) NOT NULL,
+    `dimensions` VARCHAR(191) NOT NULL,
+    `availableQuantity` INTEGER NOT NULL,
+    `dailyRate` DOUBLE NOT NULL,
+    `weeklyRate` DOUBLE NOT NULL,
+    `monthlyRate` DOUBLE NOT NULL,
+    `valuationPrice` DOUBLE NOT NULL,
+    `originalPrice` DOUBLE NOT NULL,
+    `purchaseDate` DATETIME(3) NOT NULL,
+    `conditionScore` INTEGER NOT NULL,
+    `wearLevel` INTEGER NOT NULL,
+    `tags` VARCHAR(191) NOT NULL,
+    `isFeatured` BOOLEAN NOT NULL DEFAULT false,
+    `isArchived` BOOLEAN NOT NULL DEFAULT false,
+    `currentLocation` VARCHAR(191) NULL,
+    `lastInspectedAt` DATETIME(3) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
 
--- DropIndex
-DROP INDEX `Rental_furnitureId_fkey` ON `rental`;
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- AlterTable
-ALTER TABLE `damagereport` ADD COLUMN `adminNotes` VARCHAR(191) NULL,
-    ADD COLUMN `costOfRepair` DOUBLE NULL,
-    ADD COLUMN `rentalId` VARCHAR(191) NULL,
-    ADD COLUMN `resolvedAt` DATETIME(3) NULL,
-    MODIFY `severity` ENUM('MINOR', 'MODERATE', 'SEVERE', 'CRITICAL') NOT NULL;
+-- CreateTable
+CREATE TABLE `FurnitureImage` (
+    `id` VARCHAR(191) NOT NULL,
+    `furnitureId` VARCHAR(191) NOT NULL,
+    `url` VARCHAR(191) NOT NULL,
 
--- AlterTable
-ALTER TABLE `furniture` ADD COLUMN `currentLocation` VARCHAR(191) NULL,
-    ADD COLUMN `lastInspectedAt` DATETIME(3) NULL;
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- AlterTable
-ALTER TABLE `payment` ADD COLUMN `invoiceUrl` VARCHAR(191) NULL,
-    ADD COLUMN `nextPaymentDue` DATETIME(3) NULL,
-    MODIFY `paymentMethod` ENUM('CASH', 'KHALTI', 'STRIPE', 'PAYPAL') NOT NULL,
-    MODIFY `status` ENUM('SUCCESS', 'FAILED', 'PENDING', 'REFUNDED') NOT NULL;
+-- CreateTable
+CREATE TABLE `Rental` (
+    `id` VARCHAR(191) NOT NULL,
+    `userId` VARCHAR(191) NOT NULL,
+    `furnitureId` VARCHAR(191) NULL,
+    `bundleId` VARCHAR(191) NULL,
+    `rentalType` ENUM('DAILY', 'WEEKLY', 'MONTHLY', 'SUBSCRIPTION') NOT NULL,
+    `status` ENUM('PENDING', 'ACTIVE', 'COMPLETED', 'CANCELLED', 'RENT_TO_OWN_PENDING', 'RENT_TO_OWN_ACTIVE', 'RENT_TO_OWN_COMPLETED') NOT NULL,
+    `paymentMethod` ENUM('CASH', 'KHALTI', 'STRIPE', 'PAYPAL') NOT NULL,
+    `paymentStatus` ENUM('SUCCESS', 'FAILED', 'PENDING', 'REFUNDED') NOT NULL,
+    `startDate` DATETIME(3) NOT NULL,
+    `endDate` DATETIME(3) NOT NULL,
+    `totalAmount` DOUBLE NOT NULL,
+    `quantity` INTEGER NOT NULL DEFAULT 1,
+    `discountCode` VARCHAR(191) NULL DEFAULT '',
+    `deliveryStreet` VARCHAR(191) NOT NULL,
+    `deliveryCity` VARCHAR(191) NOT NULL,
+    `deliveryState` VARCHAR(191) NOT NULL,
+    `deliveryPostalCode` VARCHAR(191) NOT NULL,
+    `deliveryCountry` VARCHAR(191) NOT NULL,
+    `deliveryStatus` ENUM('PENDING', 'SHIPPED', 'IN_TRANSIT', 'DELIVERED', 'RETURNED', 'CANCELLED') NOT NULL DEFAULT 'PENDING',
+    `deliveryTrackingNumber` VARCHAR(191) NULL,
+    `estimatedDeliveryDate` DATETIME(3) NULL,
+    `actualDeliveryDate` DATETIME(3) NULL,
+    `returnScheduledAt` DATETIME(3) NULL,
+    `returnedAt` DATETIME(3) NULL,
+    `notes` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
 
--- AlterTable
-ALTER TABLE `rental` ADD COLUMN `actualDeliveryDate` DATETIME(3) NULL,
-    ADD COLUMN `bundleId` VARCHAR(191) NULL,
-    ADD COLUMN `deliveryTrackingNumber` VARCHAR(191) NULL,
-    ADD COLUMN `estimatedDeliveryDate` DATETIME(3) NULL,
-    ADD COLUMN `notes` VARCHAR(191) NULL,
-    ADD COLUMN `returnScheduledAt` DATETIME(3) NULL,
-    ADD COLUMN `returnedAt` DATETIME(3) NULL,
-    MODIFY `furnitureId` VARCHAR(191) NULL,
-    MODIFY `rentalType` ENUM('DAILY', 'WEEKLY', 'MONTHLY', 'SUBSCRIPTION') NOT NULL,
-    MODIFY `status` ENUM('PENDING', 'ACTIVE', 'COMPLETED', 'CANCELLED', 'RENT_TO_OWN_PENDING', 'RENT_TO_OWN_ACTIVE', 'RENT_TO_OWN_COMPLETED') NOT NULL,
-    MODIFY `paymentMethod` ENUM('CASH', 'KHALTI', 'STRIPE', 'PAYPAL') NOT NULL,
-    MODIFY `paymentStatus` ENUM('SUCCESS', 'FAILED', 'PENDING', 'REFUNDED') NOT NULL,
-    MODIFY `deliveryStatus` ENUM('PENDING', 'SHIPPED', 'IN_TRANSIT', 'DELIVERED', 'RETURNED', 'CANCELLED') NOT NULL DEFAULT 'PENDING';
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Rating` (
+    `id` VARCHAR(191) NOT NULL,
+    `userId` VARCHAR(191) NOT NULL,
+    `furnitureId` VARCHAR(191) NOT NULL,
+    `score` INTEGER NOT NULL,
+    `comment` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Payment` (
+    `id` VARCHAR(191) NOT NULL,
+    `rentalId` VARCHAR(191) NOT NULL,
+    `paymentMethod` ENUM('CASH', 'KHALTI', 'STRIPE', 'PAYPAL') NOT NULL,
+    `status` ENUM('SUCCESS', 'FAILED', 'PENDING', 'REFUNDED') NOT NULL,
+    `transactionId` VARCHAR(191) NULL,
+    `amount` DOUBLE NOT NULL,
+    `paidAt` DATETIME(3) NULL,
+    `gatewayMeta` JSON NULL,
+    `invoiceUrl` VARCHAR(191) NULL,
+    `nextPaymentDue` DATETIME(3) NULL,
+
+    UNIQUE INDEX `Payment_rentalId_key`(`rentalId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `DamageReport` (
+    `id` VARCHAR(191) NOT NULL,
+    `furnitureId` VARCHAR(191) NOT NULL,
+    `reportedById` VARCHAR(191) NOT NULL,
+    `rentalId` VARCHAR(191) NULL,
+    `description` VARCHAR(191) NOT NULL,
+    `severity` ENUM('MINOR', 'MODERATE', 'SEVERE', 'CRITICAL') NOT NULL,
+    `costOfRepair` DOUBLE NULL,
+    `resolved` BOOLEAN NOT NULL DEFAULT false,
+    `resolvedAt` DATETIME(3) NULL,
+    `adminNotes` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `LoyaltyBonus` (
+    `id` VARCHAR(191) NOT NULL,
+    `userId` VARCHAR(191) NOT NULL,
+    `rentalId` VARCHAR(191) NOT NULL,
+    `points` INTEGER NOT NULL,
+    `earnedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    UNIQUE INDEX `LoyaltyBonus_rentalId_key`(`rentalId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `SubscriptionPlan` (
@@ -286,6 +391,28 @@ CREATE TABLE `Notification` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- CreateTable
+CREATE TABLE `KhaltiPayment` (
+    `id` VARCHAR(191) NOT NULL,
+    `paymentId` VARCHAR(191) NOT NULL,
+    `transactionId` VARCHAR(191) NOT NULL,
+    `token` VARCHAR(191) NOT NULL,
+    `rawResponse` JSON NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    UNIQUE INDEX `KhaltiPayment_paymentId_key`(`paymentId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `User` ADD CONSTRAINT `User_referredById_fkey` FOREIGN KEY (`referredById`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `FurnitureImage` ADD CONSTRAINT `FurnitureImage_furnitureId_fkey` FOREIGN KEY (`furnitureId`) REFERENCES `Furniture`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Rental` ADD CONSTRAINT `Rental_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
 -- AddForeignKey
 ALTER TABLE `Rental` ADD CONSTRAINT `Rental_furnitureId_fkey` FOREIGN KEY (`furnitureId`) REFERENCES `Furniture`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
@@ -293,13 +420,31 @@ ALTER TABLE `Rental` ADD CONSTRAINT `Rental_furnitureId_fkey` FOREIGN KEY (`furn
 ALTER TABLE `Rental` ADD CONSTRAINT `Rental_bundleId_fkey` FOREIGN KEY (`bundleId`) REFERENCES `FurnitureBundle`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Rental` ADD CONSTRAINT `Rental_id_fkey` FOREIGN KEY (`id`) REFERENCES `RentToOwnAgreement`(`rentalId`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE `Rental` ADD CONSTRAINT `Rental_discountCode_fkey` FOREIGN KEY (`discountCode`) REFERENCES `Discount`(`code`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `Rating` ADD CONSTRAINT `Rating_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Rating` ADD CONSTRAINT `Rating_furnitureId_fkey` FOREIGN KEY (`furnitureId`) REFERENCES `Furniture`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Payment` ADD CONSTRAINT `Payment_rentalId_fkey` FOREIGN KEY (`rentalId`) REFERENCES `Rental`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `DamageReport` ADD CONSTRAINT `DamageReport_furnitureId_fkey` FOREIGN KEY (`furnitureId`) REFERENCES `Furniture`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `DamageReport` ADD CONSTRAINT `DamageReport_reportedById_fkey` FOREIGN KEY (`reportedById`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `DamageReport` ADD CONSTRAINT `DamageReport_rentalId_fkey` FOREIGN KEY (`rentalId`) REFERENCES `Rental`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `LoyaltyBonus` ADD CONSTRAINT `LoyaltyBonus_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `LoyaltyBonus` ADD CONSTRAINT `LoyaltyBonus_rentalId_fkey` FOREIGN KEY (`rentalId`) REFERENCES `Rental`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Subscription` ADD CONSTRAINT `Subscription_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -365,6 +510,9 @@ ALTER TABLE `RentToOwnAgreement` ADD CONSTRAINT `RentToOwnAgreement_userId_fkey`
 ALTER TABLE `RentToOwnAgreement` ADD CONSTRAINT `RentToOwnAgreement_furnitureId_fkey` FOREIGN KEY (`furnitureId`) REFERENCES `Furniture`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `RentToOwnAgreement` ADD CONSTRAINT `RentToOwnAgreement_rentalId_fkey` FOREIGN KEY (`rentalId`) REFERENCES `Rental`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `FurnitureSwap` ADD CONSTRAINT `FurnitureSwap_initiatorId_fkey` FOREIGN KEY (`initiatorId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -378,3 +526,6 @@ ALTER TABLE `FurnitureSwap` ADD CONSTRAINT `FurnitureSwap_requesterFurnitureId_f
 
 -- AddForeignKey
 ALTER TABLE `Notification` ADD CONSTRAINT `Notification_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `KhaltiPayment` ADD CONSTRAINT `KhaltiPayment_paymentId_fkey` FOREIGN KEY (`paymentId`) REFERENCES `Payment`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

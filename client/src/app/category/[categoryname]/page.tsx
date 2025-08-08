@@ -6,6 +6,7 @@ import Link from 'next/link';
 export default function CategoryPage() {
   const params = useParams();
   const category = params?.categoryname as string;
+  category.toUpperCase()
 
   const { data, isLoading, isError } = useGetFurnitureByCategoryQuery(category);
 
